@@ -42,7 +42,7 @@ def powerset_construction(nfa):
             d_memory = []
 
             for t in temp_transitions:
-                print(t)
+                #print(t)
 
                 if len(t.get_end_states()) > 1:
                     for s in t.get_end_states():
