@@ -1,6 +1,7 @@
 import numpy as np
 from Preliminaries import *
-from FA import dfa, nfa
+from FA import *
+from Algorithms import *
 
 
 def main():
@@ -40,6 +41,19 @@ def main():
 
     print(nfa1)
     nfa1.print_d()
+
+    info3 = (D, "1", D)
+    nfa1.add_transition(*info3)
+
+    print(nfa1)
+    nfa1.print_d()
+
+    nfa1.remove_transition(*info3)
+    print(nfa1)
+    nfa1.print_d()
+
+    print("\n ----------------------------------------------------------------------\n")
+    powerset_construction(nfa1)
 
 
 if __name__ == "__main__":

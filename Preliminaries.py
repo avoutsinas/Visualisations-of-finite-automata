@@ -38,6 +38,18 @@ class transition:
     def get_end_name(self):
         return self.end_state.get_name()
 
+    def get_start_state(self):
+        return self.start_state
+
+    def get_end_state(self):
+        return self.end_state
+
+    def __eq__(self, other):
+        if self.start_state == other.start_state and self.end_state == other.end_state and self.letter == other.letter:
+            return True
+        else:
+            return False
+
     def __str__(self):
         to_return = self.start_state.get_name() + " -> " + self.letter + " -> " + self.end_state.get_name()
         return to_return
@@ -63,13 +75,23 @@ class nfa_transition:
 
         return temp
 
+    def get_start_state(self):
+        return self.start_state
+
+    def get_end_states(self):
+        return self.end_states
+
     def add_end_state(self, state):
+        self.end_states.append(state)
+
+    def change_end_state(self, state):
+        self.end_states.clear()
         self.end_states.append(state)
 
     def is_start_final(self):
         to_return = False
 
-        if self.start_state.is_final == True:
+        if self.start_state.is_final:
             to_return = True
 
         return to_return
@@ -77,7 +99,7 @@ class nfa_transition:
     def is_end_final(self):
         to_return = False
         for state in self.end_states:
-            if state.is_final == True:
+            if state.is_final:
                 to_return = True
 
         return to_return
