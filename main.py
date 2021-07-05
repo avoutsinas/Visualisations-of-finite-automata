@@ -40,20 +40,20 @@ def main():
         nfa1.add_transition(*info2[i])
 
     print(nfa1)
-    nfa1.print_d()
+    #nfa1.print_d()
 
     info3 = (D, "1", D)
     nfa1.add_transition(*info3)
 
     print(nfa1)
-    nfa1.print_d()
+    #nfa1.print_d()
 
     nfa1.remove_transition(*info3)
     print(nfa1)
-    nfa1.print_d()
+    #nfa1.print_d()
 
     print("\n ----------------------------------------------------------------------\n")
-    powerset_construction(nfa1)
+    dfa_conversion(nfa1)
 
 
 if __name__ == "__main__":

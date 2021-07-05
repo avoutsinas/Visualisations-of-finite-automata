@@ -124,7 +124,7 @@ class dfa:
                 r += k.format(*line) + "\n"
                 r += "-" * len(k.format(*line)) + "\n"
 
-            return ("\nTransition table for dFA " + self.name) + "\n\n" + r
+            return ("\nTransition table for DFA " + self.name) + "\n\n" + r
 
         else:
             return "dfa is not valid"
