@@ -3,7 +3,7 @@ from Preliminaries import *
 
 
 class dfa:
-    def __init__(self, name="M"):
+    def __init__(self, name):
         self.name = name
         self.Q = []
         self.d = []
@@ -17,6 +17,14 @@ class dfa:
         for i in range(len(new_letters)):
             if new_letters[i] not in self.sigma:
                 self.sigma.append(str(new_letters[i]))
+
+    def get_state_d(self, state):
+        to_return = []
+        for t in self.d:
+            if t.get_start_name() == state.get_name():
+                to_return.append(t)
+
+        return to_return
 
     def add_state(self, state_name, final=False):
         if self.Q == []:
@@ -40,7 +48,6 @@ class dfa:
             self.F.append(self.Q[-1])
 
     def add_transition(self, q1, letter, q2):
-
         letter_str = str(letter)
 
         if q1 in self.Q and q2 in self.Q:
@@ -128,7 +135,7 @@ class dfa:
 
     def __str__(self):
 
-        if self.is_valid() or not self.is_valid():
+        if self.is_valid():
             self.get_table()
             r = ""
             size = "{:^" + str(self.find_table_size() + 4) + "s}|"
@@ -144,7 +151,7 @@ class dfa:
 
 
 class nfa:
-    def __init__(self, name="N"):
+    def __init__(self, name):
         self.name = name
         self.Q = []
         self.d = []

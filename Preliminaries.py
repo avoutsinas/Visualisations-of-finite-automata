@@ -11,10 +11,10 @@ class state:
         self.state = [self.name, self.is_start, self.is_final]
 
     def get_name(self):
-        return self.state[0]
+        return self.name
 
     def __eq__(self, other):
-        if self.state[0] == other.state[0] and self.state[1] == other.state[1] and self.state[2] == other.state[2]:
+        if self.name == other.name and self.is_start == other.is_start and self.is_final == other.is_final:
             return True
         else:
             return False

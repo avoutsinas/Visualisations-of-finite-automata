@@ -2,6 +2,8 @@ import numpy as np
 from Preliminaries import *
 from FA import *
 
+"""******************************************* NFA TO DFA **********************************************************"""
+
 
 def is_nfa(n):
     pass
@@ -62,7 +64,6 @@ def epsilon_closure(all_states, nfa_transitions, powerset):
             for j in nfa_transitions:
                 if j.get_start_name() in combined_name and j.letter == epsilon \
                         and j.get_end_name() not in combined_name:
-
                     to_append = nfa_transition(combined_state, j.letter, [k for k in j.get_end_states()])
                     empty_d.append(to_append)
                     # print(nfa_transition(combined_state, j.letter, [k for k in j.get_end_states()]))
@@ -127,7 +128,7 @@ def dfa_conversion(nfa):
     delta = nfa.d.copy()
 
     powerset = find_powerset(nfa)
-    print(powerset)
+    print("POWERSET: " + str(powerset))
 
     if epsilon in sigma:
         sigma.remove(epsilon)
@@ -179,3 +180,37 @@ def dfa_conversion(nfa):
         output_dfa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
 
     print(output_dfa)
+
+
+"""******************************************* DFA TO minDFA *******************************************************"""
+
+
+def remove_unreachable_states(input_dfa):
+    Q = input_dfa.Q.copy()
+    d = input_dfa.d.copy()
+    reachable_states = [input_dfa.Q[0]]
+    new_states = [input_dfa.Q[0]]
+
+    while new_states != []:
+        temp = []
+        for q in new_states:
+            for l in input_dfa.sigma:
+                temp += [t.get_end_state() for t in input_dfa.d if t.get_start_state() == q and t.letter == l]
+
+        new_states = [i for i in temp if i not in reachable_states]
+        reachable_states += new_states
+
+    reachable_transitions = [t for t in d if t.get_start_state() in reachable_states]
+
+    output_dfa = dfa("min"+input_dfa.name)
+
+    for i in range(len(reachable_states)):
+        output_dfa.add_state(reachable_states[i].get_name(), reachable_states[i].is_final)
+
+    for j in reachable_transitions:
+        output_dfa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
+
+    print(output_dfa.get_table())
+    print(output_dfa)
+
+
