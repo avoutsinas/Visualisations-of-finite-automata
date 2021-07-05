@@ -210,7 +210,7 @@ def remove_unreachable_states(input_dfa):
     for j in reachable_transitions:
         output_dfa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
 
-    print(output_dfa.get_table())
+    #print(output_dfa.get_table())
     print(output_dfa)
 
 

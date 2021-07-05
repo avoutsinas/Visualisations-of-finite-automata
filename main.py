@@ -77,7 +77,7 @@ def main():
     dfa2.add_state("3", True)
     dfa2.add_state("4", False)
 
-    dfa2.print_Q()
+    #dfa2.print_Q()
 
     a1 = dfa2.Q[0]
     b1 = dfa2.Q[1]
@@ -86,10 +86,10 @@ def main():
 
     info4 = [(a1, "a", b1), (a1, "b", a1), (b1, "a", b1), (b1, "b", c1), (c1, "a", c1), (c1, "b", c1), (d1, "a", c1),
              (d1, "b", d1)]
+
     for i in range(len(info4)):
         dfa2.add_transition(*info4[i])
 
-    print(dfa2.get_table())
     print(dfa2)
 
     remove_unreachable_states(dfa2)
