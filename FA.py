@@ -3,13 +3,15 @@ from Preliminaries import *
 
 
 class dfa:
-    def __init__(self, name="M", sigma=[]):
+    def __init__(self, name="M"):
         self.name = name
         self.Q = []
         self.d = []
         self.s = []
         self.F = []
-        self.sigma = sigma
+        self.sigma = []
+        self.table = []
+        self.table_length = 0
 
     def set_sigma(self, new_letters):
         for i in range(len(new_letters)):
@@ -87,40 +89,51 @@ class dfa:
             i += 1
         print("\n")
 
+    def find_table_size(self):
+        name_size = max([len(x.get_end_name()) for x in self.d])
+        if name_size > self.table_length:
+            self.table_length = name_size
+        return self.table_length
+
+    def get_table(self):
+        lst = ["", "\u03B4"]
+
+        for i in self.sigma:
+            lst.append(i)
+        dfa_table = [lst]
+
+        for s in self.Q:
+            temp = []
+            if s.is_start and not s.is_final:
+                slot1 = "s"
+            elif s.is_final and not s.is_start:
+                slot1 = "F"
+            elif s.is_start and s.is_final:
+                slot1 = "s,F"
+            else:
+                slot1 = ""
+
+            slot2 = s.get_name()
+
+            temp = [slot1, slot2]
+            for l in self.sigma:
+                for t in self.d:
+                    if t.letter == l and s.get_name() == t.get_start_name():
+                        temp.append(t.get_end_name())
+            dfa_table.append(temp)
+
+        self.table = np.array(dfa_table, dtype=object)
+
+        return self.table
+
     def __str__(self):
 
         if self.is_valid() or not self.is_valid():
-
-            lst = ["", "\u03B4"]
-
-            for i in self.sigma:
-                lst.append(i)
-            dfa_table = [lst]
-
-            for s in self.Q:
-                temp = []
-                if s.is_start and not s.is_final:
-                    slot1 = "s"
-                elif s.is_final and not s.is_start:
-                    slot1 = "F"
-                elif s.is_start and s.is_final:
-                    slot1 = "s,F"
-                else:
-                    slot1 = ""
-
-                slot2 = s.get_name()
-
-                temp = [slot1, slot2]
-                for l in self.sigma:
-                    for t in self.d:
-                        if t.letter == l and s.get_name() == t.get_start_name():
-                            temp.append(t.get_end_name())
-                dfa_table.append(temp)
-
-            dfa_table = np.array(dfa_table)
+            self.get_table()
             r = ""
-            for line in dfa_table:
-                k = "{:^11s}|" * len(lst)
+            size = "{:^" + str(self.find_table_size() + 4) + "s}|"
+            for line in self.table:
+                k = size * len(self.table[0])
                 r += k.format(*line) + "\n"
                 r += "-" * len(k.format(*line)) + "\n"
 
@@ -131,14 +144,15 @@ class dfa:
 
 
 class nfa:
-    def __init__(self, name="N", sigma=[]):
+    def __init__(self, name="N"):
         self.name = name
         self.Q = []
         self.d = []
         self.s = []
         self.F = []
-        self.sigma = sigma
-        self.matrix = []
+        self.sigma = []
+        self.table = []
+        self.table_length = 0
 
     def set_sigma(self, new_letters):
         for i in range(new_letters):
@@ -228,37 +242,43 @@ class nfa:
         for l in self.sigma:
             lst.append(l)
 
-        self.matrix = np.zeros((len(self.Q) + 1, len(lst)), dtype=object)
-        self.matrix[0] = lst
+        self.table = np.zeros((len(self.Q) + 1, len(lst)), dtype=object)
+        self.table[0] = lst
 
-        for row in range(1, len(self.matrix)):
+        for row in range(1, len(self.table)):
             temp_lst = []
             j = row - 1
             if self.Q[j].is_start and not self.Q[j].is_final:
-                self.matrix[row][0] = "s"
+                self.table[row][0] = "s"
             elif self.Q[j].is_final and not self.Q[j].is_start:
-                self.matrix[row][0] = "F"
+                self.table[row][0] = "F"
             elif self.Q[j].is_start and self.Q[j].is_final:
-                self.matrix[row][0] = "s,F"
+                self.table[row][0] = "s,F"
             else:
-                self.matrix[row][0] = ""
+                self.table[row][0] = ""
 
-            self.matrix[row][1] = self.Q[j].get_name()
+            self.table[row][1] = self.Q[j].get_name()
 
             for t in self.get_d():
-                if t.get_start_name() == self.matrix[row][1]:
+                if t.get_start_name() == self.table[row][1]:
                     temp_lst.append(t)
 
-            for col in range(2, len(self.matrix[0])):
+            for col in range(2, len(self.table[0])):
                 for elem in temp_lst:
-                    if elem.letter == self.matrix[0][col]:
-                        self.matrix[row][col] = elem.get_end_name()
+                    if elem.letter == self.table[0][col]:
+                        self.table[row][col] = elem.get_end_name()
 
-        return self.matrix
+        return self.table
 
     def print_d(self):
         for i in self.get_d():
             print(i)
+
+    def find_table_size(self):
+        name_size = max([len(x.get_end_name()) for x in self.d])
+        if name_size > self.table_length:
+            self.table_length = name_size
+        return self.table_length
 
     def print_Q(self):
         i = 1
@@ -275,8 +295,9 @@ class nfa:
         table = self.get_table()
 
         r = ""
+        size = "{:^" + str(self.find_table_size() + 4) + "s}|"
         for line in table:
-            k = "{:^11s}|" * len(table[0])
+            k = size * len(table[0])
             r += k.format(*line) + "\n"
             r += "-" * len(k.format(*line)) + "\n"
 

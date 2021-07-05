@@ -5,9 +5,10 @@ epsilon = '\u03B5'
 
 class state:
     def __init__(self, state_name, is_start=False, is_final=False):
+        self.name = str(state_name)
         self.is_start = is_start
         self.is_final = is_final
-        self.state = [str(state_name), self.is_start, self.is_final]
+        self.state = [self.name, self.is_start, self.is_final]
 
     def get_name(self):
         return self.state[0]
