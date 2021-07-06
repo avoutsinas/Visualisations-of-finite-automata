@@ -2,14 +2,59 @@ import numpy as np
 from Preliminaries import *
 
 
-class dfa:
-    def __init__(self, name="M", sigma=[]):
+class Dfa:
+    def __init__(self, name):
         self.name = name
         self.Q = []
         self.d = []
         self.s = []
         self.F = []
-        self.sigma = sigma
+        self.sigma = []
+        self.table = []
+        self.table_length = 0
+
+    # accessors
+
+    def get_state_d(self, state):
+        to_return = []
+        for t in self.d:
+            if t.get_start_name() == state.get_name():
+                to_return.append(t)
+
+        return to_return
+
+    def get_table(self):
+        lst = ["", "\u03B4"]
+
+        for i in self.sigma:
+            lst.append(i)
+        dfa_table = [lst]
+
+        for s in self.Q:
+            temp = []
+            if s.is_start and not s.is_final:
+                slot1 = "s"
+            elif s.is_final and not s.is_start:
+                slot1 = "F"
+            elif s.is_start and s.is_final:
+                slot1 = "s,F"
+            else:
+                slot1 = ""
+
+            slot2 = s.get_name()
+
+            temp = [slot1, slot2]
+            for l in self.sigma:
+                for t in self.d:
+                    if t.letter == l and s.get_name() == t.get_start_name():
+                        temp.append(t.get_end_name())
+            dfa_table.append(temp)
+
+        self.table = np.array(dfa_table, dtype=object)
+
+        return self.table
+
+    # mutators
 
     def set_sigma(self, new_letters):
         for i in range(len(new_letters)):
@@ -18,7 +63,7 @@ class dfa:
 
     def add_state(self, state_name, final=False):
         if self.Q == []:
-            state_to_add = state(state_name, True, final)
+            state_to_add = State(state_name, True, final)
             self.Q.append(state_to_add)
             self.s.append(state_to_add)
         else:
@@ -28,7 +73,7 @@ class dfa:
                     exists = True
 
             if exists == False:
-                state_to_add = state(state_name, False, final)
+                state_to_add = State(state_name, False, final)
                 self.Q.append(state_to_add)
             else:
                 # raise ValueError ("The state already exists in the dFA")
@@ -38,11 +83,10 @@ class dfa:
             self.F.append(self.Q[-1])
 
     def add_transition(self, q1, letter, q2):
-
         letter_str = str(letter)
 
         if q1 in self.Q and q2 in self.Q:
-            transition_to_add = transition(q1, letter_str, q2)
+            transition_to_add = Transition(q1, letter_str, q2)
             self.d.append(transition_to_add)
 
             if letter_str not in self.sigma:
@@ -50,13 +94,21 @@ class dfa:
 
     def remove_transition(self, q1, letter, q2):
         letter_str = str(letter)
-        to_remove = transition(q1, letter_str, q2)
+        to_remove = Transition(q1, letter_str, q2)
 
         if to_remove in self.d:
             self.d.remove(to_remove)
 
         else:
             print("transition not found")
+
+    # misc
+
+    def find_table_size(self):
+        name_size = max([len(x.get_end_name()) for x in self.d])
+        if name_size > self.table_length:
+            self.table_length = name_size
+        return self.table_length
 
     def is_valid(self):
         valid = True
@@ -87,58 +139,84 @@ class dfa:
             i += 1
         print("\n")
 
+    def print_d(self):
+        for i in self.d:
+            print(i)
+
     def __str__(self):
 
-        if self.is_valid() or not self.is_valid():
-
-            lst = ["", "\u03B4"]
-
-            for i in self.sigma:
-                lst.append(i)
-            dfa_table = [lst]
-
-            for s in self.Q:
-                temp = []
-                if s.is_start and not s.is_final:
-                    slot1 = "s"
-                elif s.is_final and not s.is_start:
-                    slot1 = "F"
-                elif s.is_start and s.is_final:
-                    slot1 = "s,F"
-                else:
-                    slot1 = ""
-
-                slot2 = s.get_name()
-
-                temp = [slot1, slot2]
-                for l in self.sigma:
-                    for t in self.d:
-                        if t.letter == l and s.get_name() == t.get_start_name():
-                            temp.append(t.get_end_name())
-                dfa_table.append(temp)
-
-            dfa_table = np.array(dfa_table)
+        if self.is_valid():
+            self.get_table()
             r = ""
-            for line in dfa_table:
-                k = "{:^11s}|" * len(lst)
+            size = "{:^" + str(self.find_table_size() + 4) + "s}|"
+            for line in self.table:
+                k = size * len(self.table[0])
                 r += k.format(*line) + "\n"
                 r += "-" * len(k.format(*line)) + "\n"
 
-            return ("\nTransition table for dFA " + self.name) + "\n\n" + r
+            return ("\nTransition table for DFA " + self.name) + "\n\n" + r
 
         else:
             return "dfa is not valid"
 
 
-class nfa:
-    def __init__(self, name="N", sigma=[]):
+class Nfa:
+    def __init__(self, name):
         self.name = name
         self.Q = []
         self.d = []
         self.s = []
         self.F = []
-        self.sigma = sigma
-        self.matrix = []
+        self.sigma = []
+        self.table = []
+        self.table_length = 0
+
+    # accessors
+
+    def get_state_d(self, state):
+        to_return = []
+        for t in self.d:
+            if t.get_start_name() == state.get_name():
+                to_return.append(t)
+
+        return to_return
+
+    def get_table(self):
+
+        lst = ["", "\u0394"]
+
+        for l in self.sigma:
+            lst.append(l)
+
+        self.table = np.zeros((len(self.Q) + 1, len(lst)), dtype=object)
+        self.table[0] = lst
+
+        for row in range(1, len(self.table)):
+            temp_lst = []
+            j = row - 1
+            if self.Q[j].is_start and not self.Q[j].is_final:
+                self.table[row][0] = "s"
+            elif self.Q[j].is_final and not self.Q[j].is_start:
+                self.table[row][0] = "F"
+            elif self.Q[j].is_start and self.Q[j].is_final:
+                self.table[row][0] = "s,F"
+            else:
+                self.table[row][0] = ""
+
+            self.table[row][1] = self.Q[j].get_name()
+
+            for t in self.fill_d():
+                if t.get_start_name() == self.table[row][1]:
+                    temp_lst.append(t)
+
+            for col in range(2, len(self.table[0])):
+                for elem in temp_lst:
+                    if elem.letter == self.table[0][col]:
+                        self.table[row][col] = elem.get_end_name()
+
+        return self.table
+
+    # mutators
 
     def set_sigma(self, new_letters):
         for i in range(new_letters):
@@ -147,7 +225,7 @@ class nfa:
 
     def add_state(self, state_name, final=False):
         if self.Q == []:
-            state_to_add = state(state_name, True, final)
+            state_to_add = State(state_name, True, final)
             self.Q.append(state_to_add)
             self.s.append(state_to_add)
         else:
@@ -157,7 +235,7 @@ class nfa:
                     exists = True
 
             if exists == False:
-                state_to_add = state(state_name, False, final)
+                state_to_add = State(state_name, False, final)
                 self.Q.append(state_to_add)
             else:
                 raise ValueError("The state already exists in the dFA")
@@ -170,7 +248,7 @@ class nfa:
         flag = False
 
         if q1 in self.Q and (q2 in self.Q or q2.get_name() == "{}"):
-            transition_to_add = nfa_transition(q1, letter_str, [q2])
+            transition_to_add = NfaTransition(q1, letter_str, [q2])
             if self.d != []:
                 for t in self.d:
                     if t.get_start_name() == q1.get_name() and t.letter == letter_str and \
@@ -195,69 +273,33 @@ class nfa:
             if t.get_start_name() == q1.get_name() and t.letter == letter_str and t.get_end_name() == q2.get_name():
                 self.d.remove(t)
                 break
-
         else:
             print("transition not found")
 
-    def get_d(self):
+    # misc
+
+    def fill_d(self):
         for s in self.Q:
             remaining = self.sigma.copy()
-            d = self.get_state_d(s)
-            if len(d) < len(self.sigma):
-                for t in d:
+            s_d = self.get_state_d(s)
+            if len(s_d) < len(self.sigma):
+                for t in s_d:
                     if t.letter in self.sigma:
                         remaining.remove(t.letter)
 
                 for letter in remaining:
-                    self.add_transition(s, letter, state("{}"))
-                    # print(transition(s, letter, state("{}")))
+                    self.add_transition(s, letter, State("{}"))
+                    # print(Transition(s, letter, State("{}")))
         return self.d
 
-    def get_state_d(self, state):
-        to_return = []
-        for t in self.d:
-            if t.get_start_name() == state.get_name():
-                to_return.append(t)
-
-        return to_return
-
-    def get_table(self):
-
-        lst = ["", "\u0394"]
-
-        for l in self.sigma:
-            lst.append(l)
-
-        self.matrix = np.zeros((len(self.Q) + 1, len(lst)), dtype=object)
-        self.matrix[0] = lst
-
-        for row in range(1, len(self.matrix)):
-            temp_lst = []
-            j = row - 1
-            if self.Q[j].is_start and not self.Q[j].is_final:
-                self.matrix[row][0] = "s"
-            elif self.Q[j].is_final and not self.Q[j].is_start:
-                self.matrix[row][0] = "F"
-            elif self.Q[j].is_start and self.Q[j].is_final:
-                self.matrix[row][0] = "s,F"
-            else:
-                self.matrix[row][0] = ""
-
-            self.matrix[row][1] = self.Q[j].get_name()
-
-            for t in self.get_d():
-                if t.get_start_name() == self.matrix[row][1]:
-                    temp_lst.append(t)
-
-            for col in range(2, len(self.matrix[0])):
-                for elem in temp_lst:
-                    if elem.letter == self.matrix[0][col]:
-                        self.matrix[row][col] = elem.get_end_name()
-
-        return self.matrix
+    def find_table_size(self):
+        name_size = max([len(x.get_end_name()) for x in self.d])
+        if name_size > self.table_length:
+            self.table_length = name_size
+        return self.table_length
 
     def print_d(self):
-        for i in self.get_d():
+        for i in self.fill_d():
             print(i)
 
     def print_Q(self):
@@ -271,12 +313,11 @@ class nfa:
         print("\n")
 
     def __str__(self):
-
         table = self.get_table()
-
         r = ""
+        size = "{:^" + str(self.find_table_size() + 4) + "s}|"
         for line in table:
-            k = "{:^11s}|" * len(table[0])
+            k = size * len(table[0])
             r += k.format(*line) + "\n"
             r += "-" * len(k.format(*line)) + "\n"
 
