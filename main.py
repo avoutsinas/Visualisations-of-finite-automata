@@ -2,12 +2,13 @@ import numpy as np
 from Preliminaries import *
 from FA import *
 from Algorithms import *
+from UI import*
 
 
 def main():
     print("\n ----------------------------------- DFA EXAMPLE 1 ---------------------------------------\n")
 
-    dfa1 = dfa("M")
+    dfa1 = Dfa("M")
     dfa1.add_state("1", False)
     dfa1.add_state("2", False)
     dfa1.add_state("3", True)
@@ -26,7 +27,7 @@ def main():
     # print("Is the DFA " + dfa1.name + " valid? : " + str(dfa1.is_valid()))
 
     print("\n --------------------------------- NFA TO DFA EXAMPLE 1 -----------------------------------\n")
-    nfa1 = nfa("N")
+    nfa1 = Nfa("N")
     nfa1.add_state("A")
     nfa1.add_state("B")
     nfa1.add_state("C")
@@ -44,11 +45,11 @@ def main():
 
     print(nfa1)
 
-    dfa_conversion(nfa1)
+    ConvertToDfa().convert(nfa1)
 
     print("\n --------------------------------- NFA TO DFA EXAMPLE 2 -----------------------------------\n")
 
-    nfa2 = nfa("eNFA")
+    nfa2 = Nfa("eNFA")
 
     nfa2.add_state("A")
     nfa2.add_state("B")
@@ -67,17 +68,17 @@ def main():
     print(nfa2)
     # nfa1.print_d()
 
-    dfa_conversion(nfa2)
+    ConvertToDfa().convert(nfa2)
 
     print("\n --------------------------------- DFA TO minDFA EXAMPLE 1 -----------------------------------\n")
 
-    dfa2 = dfa("D")
+    dfa2 = Dfa("D")
     dfa2.add_state("1", False)
     dfa2.add_state("2", False)
     dfa2.add_state("3", True)
     dfa2.add_state("4", False)
 
-    #dfa2.print_Q()
+    # dfa2.print_Q()
 
     a1 = dfa2.Q[0]
     b1 = dfa2.Q[1]
@@ -92,8 +93,9 @@ def main():
 
     print(dfa2)
 
-    remove_unreachable_states(dfa2)
+    ConvertToMinDfa().remove_unreachable_states(dfa2)
 
 
 if __name__ == "__main__":
+    App().mainloop()
     main()
