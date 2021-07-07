@@ -259,5 +259,9 @@ class Minimise(object):
         p = [p, [s for s in input_dfa.get_Q() if s not in input_dfa.get_F()]]
         w = p.copy()
 
-        print(p)
-        print(input_dfa.d)
+        while w != []:
+            current_set = w.pop()
+            print(current_set)
+            for l in input_dfa.get_sigma():
+                pass
+
