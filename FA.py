@@ -15,6 +15,10 @@ class Fa:
 
     # accessors
 
+    def get_name(self):
+        name = self.name
+        return name
+
     def get_Q(self):
         return self.Q.copy()
 

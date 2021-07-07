@@ -45,7 +45,7 @@ def main():
 
     print(nfa1)
 
-    ConvertToDfa().convert(nfa1)
+    Determinise().convert(nfa1)
 
     print("\n --------------------------------- NFA TO DFA EXAMPLE 2 -----------------------------------\n")
 
@@ -68,7 +68,7 @@ def main():
     print(nfa2)
     # nfa1.print_d()
 
-    ConvertToDfa().convert(nfa2)
+    Determinise().convert(nfa2)
 
     print("\n --------------------------------- DFA TO minDFA EXAMPLE 1 -----------------------------------\n")
 
@@ -93,10 +93,10 @@ def main():
 
     print(dfa2)
 
-    ConvertToMinDfa().remove_unreachable_states(dfa2)
+    Minimise().convert(dfa2)
 
     # -------------------------------------------------------------------------------------------------------------------
-
+    """
     nfa3 = Nfa("G")
     nfa3.add_state("1", False)
     nfa3.add_state("2", False)
@@ -115,10 +115,18 @@ def main():
     for i in range(len(info5)):
         nfa3.add_transition(*info5[i])
 
-    print(nfa3.get_table())
     print(nfa3)
 
-    ConvertToMinDfa().remove_unreachable_states(nfa3)
+    Minimise().remove_unreachable_states(nfa3)
+
+    nfa2.add_state("D")
+    D2 = nfa2.get_Q()[3]
+    nfa2.add_transition(D2,"0",C2)
+    nfa2.add_transition(D2, "1", D2)
+    nfa2.add_transition(D2, epsilon, D2)
+    print(nfa2)
+    Determinise().convert(nfa2)
+    """
 
 
 if __name__ == "__main__":

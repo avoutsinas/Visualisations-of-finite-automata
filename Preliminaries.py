@@ -29,6 +29,9 @@ class State:
 
         return str(to_return)
 
+    def __repr__(self):
+        return str(self)
+
 
 class Transition:
     def __init__(self, start_state, letter, end_state):
@@ -51,6 +54,9 @@ class Transition:
         else:
             return False
 
+    def __repr__(self):
+        return "(" + str(self) + ")"
+
 
 class DfaTransition(Transition):
     def __init__(self, start_state, letter, end_state):
@@ -65,12 +71,6 @@ class DfaTransition(Transition):
         return self.end_state.get_name()
 
     # misc
-
-    def __eq__(self, other):
-        if self.start_state == other.start_state and self.end_state == other.end_state and self.letter == other.letter:
-            return True
-        else:
-            return False
 
     def __str__(self):
         to_return = self.start_state.get_name() + " -> " + self.letter + " -> " + self.end_state.get_name()
@@ -108,12 +108,6 @@ class NfaTransition(Transition):
         self.end_state.append(state)
 
     # misc
-
-    def __eq__(self, other):
-        if self.start_state == other.start_state and self.end_state == other.end_state and self.letter == other.letter:
-            return True
-        else:
-            return False
 
     def __str__(self):
         to_return = self.start_state.get_name() + " -> " + self.letter + " -> " + str(
