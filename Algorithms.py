@@ -10,7 +10,7 @@ class ConvertToDfa(object):
     @classmethod
     def find_powerset(cls, n):
         nfa_states = []
-        for st in n.Q:
+        for st in n.get_Q():
             nfa_states.append(st.get_name())
 
         powerset = [""]
@@ -25,7 +25,7 @@ class ConvertToDfa(object):
     @classmethod
     def epsilon_closure(cls, all_states, nfa_transitions, powerset):
         q = all_states
-        d = nfa_transitions.copy()
+        d = nfa_transitions
         empty_d = []
         epsilon_closures = []
 
@@ -119,12 +119,11 @@ class ConvertToDfa(object):
     @classmethod
     def convert(cls, nfa):
         Q = []
-        Q.append(nfa.Q[0])
+        Q.append(nfa.get_Q()[0])
         transitions_to_add = []
-
-        nfa_states = nfa.Q.copy()
-        sigma = nfa.sigma.copy()
-        delta = nfa.d.copy()
+        nfa_states = nfa.get_Q().copy()
+        sigma = nfa.get_sigma()
+        delta = nfa.get_d()
 
         powerset = cls.find_powerset(nfa)
         print("POWERSET: " + str(powerset))
@@ -161,15 +160,15 @@ class ConvertToDfa(object):
 
                 if s_.get_name() in powerset:
                     if s_ == s0:
-                        transitions_to_add.append(Transition(s0, letter, s0))
+                        transitions_to_add.append(DfaTransition(s0, letter, s0))
                     else:
-                        transitions_to_add.append(Transition(s0, letter, s_))
+                        transitions_to_add.append(DfaTransition(s0, letter, s_))
                         if s_ not in Q:
                             Q.append(s_)
 
                     # print("End State : " + new_state_name + " with letter " + letter)
 
-        dfa_name = "Converted " + nfa.name
+        dfa_name = nfa.name + ".to_DFA"
         output_dfa = Dfa(dfa_name)
 
         for i in range(len(Q)):
@@ -187,16 +186,26 @@ class ConvertToDfa(object):
 class ConvertToMinDfa(object):
 
     @classmethod
-    def remove_unreachable_states(cls, input_dfa):
-        d = input_dfa.d.copy()
-        reachable_states = [input_dfa.Q[0]]
-        new_states = [input_dfa.Q[0]]
+    def remove_unreachable_states(cls, input_fa):
+
+        if input_fa.type() == "dfa":
+            cls.remove_dfa_unreachable_states(input_fa)
+        elif input_fa.type() == "nfa":
+            cls.remove_nfa_unreachable_states(input_fa)
+        else:
+            print("Unknown FA type -- cannot minimise")
+
+    @classmethod
+    def remove_dfa_unreachable_states(cls, input_dfa):
+        d = input_dfa.get_d()
+        reachable_states = [input_dfa.get_Q()[0]]
+        new_states = [input_dfa.get_Q()[0]]
 
         while new_states != []:
             temp = []
             for q in new_states:
-                for l in input_dfa.sigma:
-                    temp += [t.get_end_state() for t in input_dfa.d if t.get_start_state() == q and t.letter == l]
+                for l in input_dfa.get_sigma():
+                    temp += [t.get_end_state() for t in input_dfa.get_d() if t.get_start_state() == q and t.letter == l]
 
             new_states = [i for i in temp if i not in reachable_states]
             reachable_states += new_states
@@ -213,3 +222,32 @@ class ConvertToMinDfa(object):
 
         # print(output_dfa.get_table())
         print(output_dfa)
+
+    @classmethod
+    def remove_nfa_unreachable_states(cls, input_nfa):
+        d = input_nfa.get_d()
+        reachable_states = [input_nfa.get_Q()[0]]
+        new_states = [input_nfa.get_Q()[0]]
+
+        while new_states != []:
+            temp = []
+            for q in new_states:
+                for l in input_nfa.get_sigma():
+                    temp += [i for t in input_nfa.get_d() if t.get_start_state() == q and t.letter == l for i in t.get_end_states()]
+
+            new_states = [i for i in temp if i not in reachable_states]
+            reachable_states += new_states
+
+        reachable_transitions = [t for t in d if t.get_start_state() in reachable_states]
+
+        output_nfa = Nfa("min" + input_nfa.name)
+
+        for i in range(len(reachable_states)):
+            output_nfa.add_state(reachable_states[i].get_name(), reachable_states[i].is_final)
+
+        for j in reachable_transitions:
+            for e_s in j.get_end_states():
+                output_nfa.add_transition(j.get_start_state(), j.letter, e_s)
+
+        # print(output_nfa.get_table())
+        print(output_nfa)

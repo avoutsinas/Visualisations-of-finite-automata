@@ -2,7 +2,7 @@ import numpy as np
 from Preliminaries import *
 from FA import *
 from Algorithms import *
-from UI import*
+from UI import *
 
 
 def main():
@@ -95,7 +95,32 @@ def main():
 
     ConvertToMinDfa().remove_unreachable_states(dfa2)
 
+    # -------------------------------------------------------------------------------------------------------------------
+
+    nfa3 = Nfa("G")
+    nfa3.add_state("1", False)
+    nfa3.add_state("2", False)
+    nfa3.add_state("3", True)
+    nfa3.add_state("4", False)
+
+    a2 = nfa3.Q[0]
+    b2 = nfa3.Q[1]
+    c2 = nfa3.Q[2]
+    d2 = nfa3.Q[3]
+
+    info5 = [(a2, "a", b2), (a2, "a", a2), (a1, "b", a2), (b2, "a", b2), (b2, "b", c2), (c2, "a", c2), (c2, "b", c2),
+             (d2, "a", c2),
+             (d2, "b", d2)]
+
+    for i in range(len(info5)):
+        nfa3.add_transition(*info5[i])
+
+    print(nfa3.get_table())
+    print(nfa3)
+
+    ConvertToMinDfa().remove_unreachable_states(nfa3)
+
 
 if __name__ == "__main__":
-    #App().mainloop()
+    # App().mainloop()
     main()
