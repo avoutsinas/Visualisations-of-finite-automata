@@ -136,7 +136,7 @@ def main():
     dfa3.add_state("q4", True)
     dfa3.add_state("q5", False)
 
-    #dfa3.print_Q()
+    # dfa3.print_Q()
 
     q0 = dfa3.Q[0]
     q1 = dfa3.Q[1]
