@@ -253,15 +253,40 @@ class Minimise(object):
         return output_fa
 
     @classmethod
-    def convert(cls, dfa):
+    def hopcroft_algorithm(cls, dfa):
         input_dfa = cls.remove_unreachable_states(dfa)
         p = input_dfa.get_F()
         p = [p, [s for s in input_dfa.get_Q() if s not in input_dfa.get_F()]]
         w = p.copy()
 
         while w != []:
-            current_set = w.pop()
-            print(current_set)
+            print("W = " + str(w))
+            current_set = w.pop(0)
+            print("Current set: " + str(current_set))
             for l in input_dfa.get_sigma():
-                pass
+                print("For letter " + l)
+                x = []
+                x = [t.get_start_state() for t in input_dfa.get_d() if t.get_end_state() in current_set \
+                     and t.letter == l and t.get_start_state() not in x]
+                print(x)
+                for y in p:
+                    intersection = [st1 for st1 in y if st1 in x]
+                    diff = [st2 for st2 in y if st2 not in x]
+
+                    if intersection != [] and diff != []:
+                        print("Intersection = " + str(intersection))
+                        print("Difference = " + str(diff))
+                        p.remove(y)
+                        p.append(intersection)
+                        p.append(diff)
+                        if y in w:
+                            w.remove(y)
+                            w.append(intersection)
+                            w.append(diff)
+                        else:
+                            if len(intersection) <= len(diff):
+                                w.append(intersection)
+                            else:
+                                w.append(diff)
+        print(p)
 

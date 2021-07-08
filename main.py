@@ -93,7 +93,7 @@ def main():
 
     print(dfa2)
 
-    Minimise().convert(dfa2)
+    Minimise().hopcroft_algorithm(dfa2)
 
     # -------------------------------------------------------------------------------------------------------------------
     """
@@ -127,6 +127,33 @@ def main():
     print(nfa2)
     Determinise().convert(nfa2)
     """
+
+    dfa3 = Dfa("F")
+    dfa3.add_state("q0", False)
+    dfa3.add_state("q1", True)
+    dfa3.add_state("q2", True)
+    dfa3.add_state("q3", False)
+    dfa3.add_state("q4", True)
+    dfa3.add_state("q5", False)
+
+    #dfa3.print_Q()
+
+    q0 = dfa3.Q[0]
+    q1 = dfa3.Q[1]
+    q2 = dfa3.Q[2]
+    q3 = dfa3.Q[3]
+    q4 = dfa3.Q[4]
+    q5 = dfa3.Q[5]
+
+    info5 = [(q0, "0", q3), (q0, "1", q1), (q1, "0", q2), (q1, "1", q5), (q2, "0", q2), (q2, "1", q5), (q3, "0", q0),
+             (q3, "1", q4), (q4, "0", q2), (q4, "1", q5), (q5, "0", q5), (q5, "1", q5)]
+
+    for i in range(len(info5)):
+        dfa3.add_transition(*info5[i])
+
+    print(dfa3)
+
+    Minimise().hopcroft_algorithm(dfa3)
 
 
 if __name__ == "__main__":
