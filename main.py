@@ -93,7 +93,7 @@ def main():
 
     print(dfa2)
 
-    Minimise().hopcroft_algorithm(dfa2)
+    Minimise().convert(dfa2)
 
     # -------------------------------------------------------------------------------------------------------------------
     """
@@ -153,7 +153,7 @@ def main():
 
     print(dfa3)
 
-    Minimise().hopcroft_algorithm(dfa3)
+    Minimise().convert(dfa3)
 
 
 if __name__ == "__main__":

@@ -218,21 +218,21 @@ class Minimise(object):
         reachable_transitions = [t for t in d if t.get_start_state() in reachable_states]
 
         if unreachable_states == []:
-            print("no unreachable states")
-            print(input_fa)
+            print("no unreachable states found")
             return input_fa
         else:
-            output_fa = cls.assemble_fa(input_fa, reachable_states, reachable_transitions)
+            name = "rs_" + input_fa.get_name()
+            output_fa = cls.assemble_fa(input_fa, name, reachable_states, reachable_transitions)
             print(output_fa)
             return output_fa
 
     @classmethod
-    def assemble_fa(cls, fa, r_s, r_t):
+    def assemble_fa(cls, fa, name, r_s, r_t):
         tp = fa.type()
         output_fa = None
 
         if tp == "dfa":
-            output_fa = Dfa("min_" + fa.get_name())
+            output_fa = Dfa(name)
 
             for i in range(len(r_s)):
                 output_fa.add_state(r_s[i].get_name(), r_s[i].is_final)
@@ -253,29 +253,28 @@ class Minimise(object):
         return output_fa
 
     @classmethod
-    def hopcroft_algorithm(cls, dfa):
-        input_dfa = cls.remove_unreachable_states(dfa)
+    def hopcroft_algorithm(cls, input_dfa):
         p = input_dfa.get_F()
         p = [p, [s for s in input_dfa.get_Q() if s not in input_dfa.get_F()]]
         w = p.copy()
 
         while w != []:
-            print("W = " + str(w))
+            # print("W = " + str(w))
             current_set = w.pop(0)
-            print("Current set: " + str(current_set))
+            # print("Current set: " + str(current_set))
             for l in input_dfa.get_sigma():
-                print("For letter " + l)
+                # print("For letter " + l)
                 x = []
                 x = [t.get_start_state() for t in input_dfa.get_d() if t.get_end_state() in current_set \
                      and t.letter == l and t.get_start_state() not in x]
-                print(x)
+                # print(x)
                 for y in p:
                     intersection = [st1 for st1 in y if st1 in x]
                     diff = [st2 for st2 in y if st2 not in x]
 
                     if intersection != [] and diff != []:
-                        print("Intersection = " + str(intersection))
-                        print("Difference = " + str(diff))
+                        # print("Intersection = " + str(intersection))
+                        # print("Difference = " + str(diff))
                         p.remove(y)
                         p.append(intersection)
                         p.append(diff)
@@ -288,5 +287,64 @@ class Minimise(object):
                                 w.append(intersection)
                             else:
                                 w.append(diff)
-        print(p)
+        print("Partitions = " + str(p))
+        return p
 
+    @classmethod
+    def convert(cls, dfa):
+        r_s_dfa = cls.remove_unreachable_states(dfa)
+        partitions = cls.hopcroft_algorithm(r_s_dfa)
+
+        num_partitions = [len(set) for set in partitions]
+
+        if max(num_partitions) > 1:
+            new_Q = []
+            new_d = []
+
+            for p_set in partitions:
+                new_state_name = ""
+                start = False
+                final = False
+                if len(p_set) > 1:
+                    for s in p_set:
+                        if s.is_start:
+                            start = True
+                        if s.is_final:
+                            final = True
+                        if new_state_name == "":
+                            new_state_name += s.get_name()
+                        elif s.get_name() not in new_state_name:
+                            new_state_name += "," + s.get_name()
+                    new_state = State(new_state_name, start, final)
+                else:
+                    new_state = p_set[0]
+
+                if new_state not in new_Q:
+                    new_Q.append(new_state)
+
+            start_state = [s for s in new_Q if s.is_start]
+            start_state = start_state[0]
+            new_Q.remove(start_state)
+            new_Q.insert(0, start_state)
+            # print(new_Q)
+
+            for letter in dfa.get_sigma():
+                new_transition = ""
+                for s in new_Q:
+                    for t in dfa.get_d():
+                        if t.get_start_name() in s.get_name() and letter == t.letter:
+                            end_state = []
+                            end_state = [i for i in new_Q if t.get_end_name() in i.get_name() and i not in end_state]
+                            new_transition = DfaTransition(s, letter, end_state[0])
+                    new_d.append(new_transition)
+
+            # print(new_d)
+            name = "min_" + dfa.get_name()
+            output_dfa = cls.assemble_fa(r_s_dfa, name, new_Q, new_d)
+
+            print(output_dfa)
+            return output_dfa
+
+        else:
+            print("No non-distinguishable states found")
+            return r_s_dfa

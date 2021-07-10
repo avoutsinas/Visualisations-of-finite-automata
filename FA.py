@@ -49,25 +49,23 @@ class Fa:
                 self.sigma.append(str(new_letters[i]))
 
     def add_state(self, state_name, final=False):
+        added = False
         if self.Q == []:
             new_state = State(state_name, True, final)
             self.Q.append(new_state)
             self.s.append(new_state)
+            added = True
         else:
-            exists = False
             new_state = State(state_name, False, final)
-            for state in self.Q:
-                if state == new_state:
-                    exists = True
-
-            if not exists:
-                state_to_add = State(state_name, False, final)
-                self.Q.append(state_to_add)
+            existing = [s.get_name() for s in self.Q]
+            if state_name not in existing:
+                self.Q.append(new_state)
+                added = True
             else:
-                print("state " + str(new_state) + " already exists in FA " + str(self.name))
+                print("A state with the name [" + str(state_name) + "] already exists in FA " + str(self.name))
                 pass
 
-        if final:
+        if added and final:
             self.F.append(new_state)
 
     # misc
