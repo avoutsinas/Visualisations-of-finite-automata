@@ -48,16 +48,19 @@ class App(Frame):
         # self.input_canvas.bind('<2>', self.make_arc)
 
     def create_state(self, event):
-
+        new_state = ""
         state_name = simpledialog.askstring(title="State Creation", prompt="Enter the name of the State",
                                             parent=self.input_canvas)
-        while state_name == "":
-            state_name = simpledialog.askstring(title="State Creation", prompt="States must not have empty names",
+
+        while state_name == "" or state_name in [i.get_name() for i in self.states]:
+            state_name = simpledialog.askstring(title="State Creation", prompt="States must have non-empty and unique "
+                                                                               "names.\n\n" "Please select a unique "
+                                                                               "name for this state",
                                                 parent=self.input_canvas)
 
         if state_name is not None:
             x, y, r = event.x, event.y, self.radius
-            if self.states == []:
+            if not self.states:
                 new_state = State(state_name, True, False)
 
                 self.input_canvas.create_line(x - r, y, x - 2.2 * r, y, arrow=tk.FIRST, tags="arrow")
@@ -96,6 +99,7 @@ class App(Frame):
 
     def move_state(self, event):
         x, y, r = event.x, event.y, self.radius
+
         self.input_canvas.coords('selected', x - r, y - r, x + r, y + r)
         self.input_canvas.coords('selected_txt', x, y)
         if self.start_flag:
