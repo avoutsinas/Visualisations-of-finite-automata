@@ -29,6 +29,9 @@ class State:
 
         return str(to_return)
 
+    def __repr__(self):
+        return str(self)
+
 
 class Transition:
     def __init__(self, start_state, letter, end_state):
@@ -37,21 +40,13 @@ class Transition:
         self.letter = str(letter)
         self.matrix = [self.start_state, self.letter, self.end_state]
 
-    # accessors
-
-    def get_start_name(self):
-        return self.start_state.get_name()
-
-    def get_end_name(self):
-        return self.end_state.get_name()
+        # accessors
 
     def get_start_state(self):
         return self.start_state
 
-    def get_end_state(self):
-        return self.end_state
-
-    # misc
+    def get_start_name(self):
+        return self.start_state.get_name()
 
     def __eq__(self, other):
         if self.start_state == other.start_state and self.end_state == other.end_state and self.letter == other.letter:
@@ -59,47 +54,62 @@ class Transition:
         else:
             return False
 
+    def __repr__(self):
+        return "(" + str(self) + ")"
+
+
+class DfaTransition(Transition):
+    def __init__(self, start_state, letter, end_state):
+        super().__init__(start_state, letter, end_state)
+
+    # accessors
+
+    def get_end_state(self):
+        return self.end_state
+
+    def get_end_name(self):
+        return self.end_state.get_name()
+
+    # misc
+
     def __str__(self):
         to_return = self.start_state.get_name() + " -> " + self.letter + " -> " + self.end_state.get_name()
         return to_return
 
 
-class NfaTransition:
-    def __init__(self, start_state, letter, end_states):
-        self.start_state = start_state
-        self.end_states = end_states
-        self.letter = str(letter)
-        self.matrix = [self.start_state, self.letter, self.end_states]
+class NfaTransition(Transition):
+    def __init__(self, start_state, letter, end_state):
+        super().__init__(start_state, letter, end_state)
 
     # accessors
 
-    def get_start_state(self):
-        return self.start_state
-
     def get_end_states(self):
-        return self.end_states
-
-    def get_start_name(self):
-        return self.start_state.get_name()
+        return self.end_state
 
     def get_end_name(self):
+        name_lst = []
         temp = ""
-        for i in range(len(self.end_states)):
+        for e_s in self.get_end_states():
+            name_lst.append(e_s.name)
+
+        name_lst = sorted(name_lst)
+
+        for i in range(len(name_lst)):
             if i == 0:
-                temp += self.end_states[i].get_name()
+                temp += name_lst[i]
             else:
-                temp += "," + self.end_states[i].get_name()
+                temp += "," + name_lst[i]
 
         return temp
 
     # mutators
 
     def add_end_state(self, state):
-        self.end_states.append(state)
+        self.end_state.append(state)
 
     # misc
 
     def __str__(self):
         to_return = self.start_state.get_name() + " -> " + self.letter + " -> " + str(
-            [n.get_name() for n in self.end_states])
+            sorted([n.get_name() for n in self.end_state]))
         return to_return

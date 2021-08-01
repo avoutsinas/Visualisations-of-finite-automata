@@ -2,10 +2,10 @@ import numpy as np
 from Preliminaries import *
 from FA import *
 from Algorithms import *
-from UI import*
+from UI import *
 
 
-def main():
+def run_tests():
     print("\n ----------------------------------- DFA EXAMPLE 1 ---------------------------------------\n")
 
     dfa1 = Dfa("M")
@@ -45,7 +45,7 @@ def main():
 
     print(nfa1)
 
-    ConvertToDfa().convert(nfa1)
+    Determinise().convert(nfa1)
 
     print("\n --------------------------------- NFA TO DFA EXAMPLE 2 -----------------------------------\n")
 
@@ -68,7 +68,7 @@ def main():
     print(nfa2)
     # nfa1.print_d()
 
-    ConvertToDfa().convert(nfa2)
+    Determinise().convert(nfa2)
 
     print("\n --------------------------------- DFA TO minDFA EXAMPLE 1 -----------------------------------\n")
 
@@ -93,9 +93,71 @@ def main():
 
     print(dfa2)
 
-    ConvertToMinDfa().remove_unreachable_states(dfa2)
+    Minimise().convert(dfa2)
+
+    # -------------------------------------------------------------------------------------------------------------------
+    nfa3 = Nfa("G")
+    nfa3.add_state("1", False)
+    nfa3.add_state("2", False)
+    nfa3.add_state("3", True)
+    nfa3.add_state("4", False)
+
+    a2 = nfa3.Q[0]
+    b2 = nfa3.Q[1]
+    c2 = nfa3.Q[2]
+    d2 = nfa3.Q[3]
+
+    info5 = [(a2, "a", b2), (a2, "a", a2), (a1, "b", a2), (b2, "a", b2), (b2, "b", c2), (c2, "a", c2), (c2, "b", c2),
+             (d2, "a", c2),
+             (d2, "b", d2)]
+
+    for i in range(len(info5)):
+        nfa3.add_transition(*info5[i])
+
+    print(nfa3)
+
+    Minimise().remove_unreachable_states(nfa3)
+
+    nfa2.add_state("D")
+    D2 = nfa2.get_Q()[3]
+    nfa2.add_transition(D2, "0", C2)
+    nfa2.add_transition(D2, "1", D2)
+    nfa2.add_transition(D2, epsilon, D2)
+    print(nfa2)
+    Determinise().convert(nfa2)
+
+    dfa3 = Dfa("F")
+    dfa3.add_state("q0", False)
+    dfa3.add_state("q1", True)
+    dfa3.add_state("q2", True)
+    dfa3.add_state("q3", False)
+    dfa3.add_state("q4", True)
+    dfa3.add_state("q5", False)
+
+    # dfa3.print_Q()
+
+    q0 = dfa3.Q[0]
+    q1 = dfa3.Q[1]
+    q2 = dfa3.Q[2]
+    q3 = dfa3.Q[3]
+    q4 = dfa3.Q[4]
+    q5 = dfa3.Q[5]
+
+    info5 = [(q0, "0", q3), (q0, "1", q1), (q1, "0", q2), (q1, "1", q5), (q2, "0", q2), (q2, "1", q5), (q3, "0", q0),
+             (q3, "1", q4), (q4, "0", q2), (q4, "1", q5), (q5, "0", q5), (q5, "1", q5)]
+
+    for i in range(len(info5)):
+        dfa3.add_transition(*info5[i])
+
+    print(dfa3)
+
+    Minimise().convert(dfa3)
+
+
+def main():
+    run_tests()
+    App().mainloop()
 
 
 if __name__ == "__main__":
-    #App().mainloop()
     main()

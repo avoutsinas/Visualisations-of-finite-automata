@@ -2,7 +2,7 @@ import numpy as np
 from Preliminaries import *
 
 
-class Dfa:
+class Fa:
     def __init__(self, name):
         self.name = name
         self.Q = []
@@ -15,13 +15,81 @@ class Dfa:
 
     # accessors
 
+    def get_name(self):
+        name = self.name
+        return name
+
+    def get_Q(self):
+        return self.Q.copy()
+
+    def get_d(self):
+        return self.d.copy()
+
+    def get_s(self):
+        return self.s.copy()
+
+    def get_F(self):
+        return self.F.copy()
+
+    def get_sigma(self):
+        return self.sigma.copy()
+
     def get_state_d(self, state):
         to_return = []
         for t in self.d:
             if t.get_start_name() == state.get_name():
                 to_return.append(t)
-
         return to_return
+
+    # mutators
+
+    def set_sigma(self, new_letters):
+        for i in range(len(new_letters)):
+            if new_letters[i] not in self.sigma:
+                self.sigma.append(str(new_letters[i]))
+
+    def add_state(self, state_name, final=False):
+        added = False
+        if self.Q == []:
+            new_state = State(state_name, True, final)
+            self.Q.append(new_state)
+            self.s.append(new_state)
+            added = True
+        else:
+            new_state = State(state_name, False, final)
+            existing = [s.get_name() for s in self.Q]
+            if state_name not in existing:
+                self.Q.append(new_state)
+                added = True
+            else:
+                print("A state with the name [" + str(state_name) + "] already exists in FA " + str(self.name))
+                pass
+
+        if added and final:
+            self.F.append(new_state)
+
+    # misc
+
+    def print_Q(self):
+        i = 1
+        print("\n#|   Q   , s   ,  F")
+        print("----------------------")
+        for state in self.Q:
+            print(str(i) + "|", str(state))
+            print("----------------------")
+            i += 1
+        print("\n")
+
+    def print_d(self):
+        for i in self.d:
+            print(i)
+
+
+class Dfa(Fa):
+    def __init__(self, name):
+        super().__init__(name)
+
+    # accessors
 
     def get_table(self):
         lst = ["", "\u03B4"]
@@ -56,37 +124,11 @@ class Dfa:
 
     # mutators
 
-    def set_sigma(self, new_letters):
-        for i in range(len(new_letters)):
-            if new_letters[i] not in self.sigma:
-                self.sigma.append(str(new_letters[i]))
-
-    def add_state(self, state_name, final=False):
-        if self.Q == []:
-            state_to_add = State(state_name, True, final)
-            self.Q.append(state_to_add)
-            self.s.append(state_to_add)
-        else:
-            exists = False
-            for s in self.Q:
-                if s.get_name() == str(state_name):
-                    exists = True
-
-            if exists == False:
-                state_to_add = State(state_name, False, final)
-                self.Q.append(state_to_add)
-            else:
-                # raise ValueError ("The state already exists in the dFA")
-                pass
-
-        if final == True:
-            self.F.append(self.Q[-1])
-
     def add_transition(self, q1, letter, q2):
         letter_str = str(letter)
 
         if q1 in self.Q and q2 in self.Q:
-            transition_to_add = Transition(q1, letter_str, q2)
+            transition_to_add = DfaTransition(q1, letter_str, q2)
             self.d.append(transition_to_add)
 
             if letter_str not in self.sigma:
@@ -94,7 +136,7 @@ class Dfa:
 
     def remove_transition(self, q1, letter, q2):
         letter_str = str(letter)
-        to_remove = Transition(q1, letter_str, q2)
+        to_remove = DfaTransition(q1, letter_str, q2)
 
         if to_remove in self.d:
             self.d.remove(to_remove)
@@ -103,6 +145,10 @@ class Dfa:
             print("transition not found")
 
     # misc
+
+    @staticmethod
+    def type():
+        return "dfa"
 
     def find_table_size(self):
         name_size = max([len(x.get_end_name()) for x in self.d])
@@ -129,20 +175,6 @@ class Dfa:
 
         return valid
 
-    def print_Q(self):
-        i = 1
-        print("\n#|   Q   , s   ,  F")
-        print("----------------------")
-        for state in self.Q:
-            print(str(i) + "|", str(state))
-            print("----------------------")
-            i += 1
-        print("\n")
-
-    def print_d(self):
-        for i in self.d:
-            print(i)
-
     def __str__(self):
 
         if self.is_valid():
@@ -160,27 +192,11 @@ class Dfa:
             return "dfa is not valid"
 
 
-class Nfa:
+class Nfa(Fa):
     def __init__(self, name):
-        self.name = name
-        self.Q = []
-        self.d = []
-        self.s = []
-        self.F = []
-        self.sigma = []
-        self.table = []
-        self.table_length = 0
+        super().__init__(name)
 
     # accessors
-
-    def get_state_d(self, state):
-        to_return = []
-        for t in self.d:
-            if t.get_start_name() == state.get_name():
-                to_return.append(t)
-
-        return to_return
-
     def get_table(self):
 
         lst = ["", "\u0394"]
@@ -218,31 +234,6 @@ class Nfa:
 
     # mutators
 
-    def set_sigma(self, new_letters):
-        for i in range(new_letters):
-            if new_letters[i] not in self.sigma:
-                self.sigma.append(str(new_letters[i]))
-
-    def add_state(self, state_name, final=False):
-        if self.Q == []:
-            state_to_add = State(state_name, True, final)
-            self.Q.append(state_to_add)
-            self.s.append(state_to_add)
-        else:
-            exists = False
-            for s in self.Q:
-                if s.get_name() == str(state_name):
-                    exists = True
-
-            if exists == False:
-                state_to_add = State(state_name, False, final)
-                self.Q.append(state_to_add)
-            else:
-                raise ValueError("The state already exists in the dFA")
-
-        if final == True:
-            self.F.append(self.Q[-1])
-
     def add_transition(self, q1, letter, q2):
         letter_str = str(letter)
         flag = False
@@ -278,9 +269,13 @@ class Nfa:
 
     # misc
 
+    @staticmethod
+    def type():
+        return "nfa"
+
     def fill_d(self):
         for s in self.Q:
-            remaining = self.sigma.copy()
+            remaining = self.get_sigma()
             s_d = self.get_state_d(s)
             if len(s_d) < len(self.sigma):
                 for t in s_d:
@@ -289,28 +284,17 @@ class Nfa:
 
                 for letter in remaining:
                     self.add_transition(s, letter, State("{}"))
-                    # print(Transition(s, letter, State("{}")))
+                    # print(DfaTransition(s, letter, State("{}")))
         return self.d
 
     def find_table_size(self):
-        name_size = max([len(x.get_end_name()) for x in self.d])
-        if name_size > self.table_length:
-            self.table_length = name_size
+        if self.get_d() != []:
+            name_size = max([len(x.get_end_name()) for x in self.get_d()])
+            if name_size > self.table_length:
+                self.table_length = name_size
+        else:
+            self.table_length = 3
         return self.table_length
-
-    def print_d(self):
-        for i in self.fill_d():
-            print(i)
-
-    def print_Q(self):
-        i = 1
-        print("\n#|   Q   , s   ,  F")
-        print("----------------------")
-        for state in self.Q:
-            print(str(i) + "|", str(state))
-            print("----------------------")
-            i += 1
-        print("\n")
 
     def __str__(self):
         table = self.get_table()
