@@ -13,20 +13,22 @@ class App(Frame):
     def __init__(self):
         super().__init__()
         self.pack(expand=Y, fill=BOTH)
+        self.width = 1400
+        self.height = 850
 
-        self.main_canvas = Canvas(self, width=1400, height=850, bg='#00ffff')
+        self.main_canvas = Canvas(self, width=self.width, height=self.height, bg='#00ffff')
         self.main_canvas.pack(expand=Y, fill=BOTH)
 
-        self.input_canvas = tk.Canvas(self.main_canvas, width=1000, height=370, bg='white')
+        self.input_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435, bg='white')
         self.input_canvas.pack()
 
-        self.output_canvas = tk.Canvas(self.main_canvas, width=1000, height=370, bg='white')
+        self.output_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435, bg='white')
         self.output_canvas.pack()
 
-        self.input_window = tk.Canvas(self.main_canvas, width=350, height=370, bg='white')
+        self.input_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435, bg='white')
         self.input_window.pack()
 
-        self.output_window = tk.Canvas(self.main_canvas, width=350, height=370, bg='white')
+        self.output_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435, bg='white')
         self.output_window.pack()
 
         self.setup()
