@@ -5,7 +5,7 @@ from Algorithms import *
 from UI import *
 
 
-def main():
+def run_tests():
     print("\n ----------------------------------- DFA EXAMPLE 1 ---------------------------------------\n")
 
     dfa1 = Dfa("M")
@@ -96,7 +96,6 @@ def main():
     Minimise().convert(dfa2)
 
     # -------------------------------------------------------------------------------------------------------------------
-    """
     nfa3 = Nfa("G")
     nfa3.add_state("1", False)
     nfa3.add_state("2", False)
@@ -121,12 +120,11 @@ def main():
 
     nfa2.add_state("D")
     D2 = nfa2.get_Q()[3]
-    nfa2.add_transition(D2,"0",C2)
+    nfa2.add_transition(D2, "0", C2)
     nfa2.add_transition(D2, "1", D2)
     nfa2.add_transition(D2, epsilon, D2)
     print(nfa2)
     Determinise().convert(nfa2)
-    """
 
     dfa3 = Dfa("F")
     dfa3.add_state("q0", False)
@@ -156,6 +154,10 @@ def main():
     Minimise().convert(dfa3)
 
 
+def main():
+    run_tests()
+    App.mainloop()
+
+
 if __name__ == "__main__":
-    # App().mainloop()
     main()
