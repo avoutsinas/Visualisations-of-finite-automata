@@ -227,32 +227,6 @@ class Minimise(object):
             return output_fa
 
     @classmethod
-    def assemble_fa(cls, fa, name, r_s, r_t):
-        tp = fa.type()
-        output_fa = None
-
-        if tp == "dfa":
-            output_fa = Dfa(name)
-
-            for i in range(len(r_s)):
-                output_fa.add_state(r_s[i].get_name(), r_s[i].is_final)
-
-            for j in r_t:
-                output_fa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
-
-        elif tp == "nfa":
-            output_fa = Nfa("min_" + fa.get_name())
-
-            for i in range(len(r_s)):
-                output_fa.add_state(r_s[i].get_name(), r_s[i].is_final)
-
-            for j in r_t:
-                for e_s in j.get_end_states():
-                    output_fa.add_transition(j.get_start_state(), j.letter, e_s)
-
-        return output_fa
-
-    @classmethod
     def hopcroft_algorithm(cls, input_dfa):
         p = input_dfa.get_F()
         p = [p, [s for s in input_dfa.get_Q() if s not in input_dfa.get_F()]]
@@ -289,6 +263,32 @@ class Minimise(object):
                                 w.append(diff)
         print("Partitions = " + str(p))
         return p
+
+    @classmethod
+    def assemble_fa(cls, fa, name, r_s, r_t):
+        tp = fa.type()
+        output_fa = None
+
+        if tp == "dfa":
+            output_fa = Dfa(name)
+
+            for i in range(len(r_s)):
+                output_fa.add_state(r_s[i].get_name(), r_s[i].is_final)
+
+            for j in r_t:
+                output_fa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
+
+        elif tp == "nfa":
+            output_fa = Nfa("min_" + fa.get_name())
+
+            for i in range(len(r_s)):
+                output_fa.add_state(r_s[i].get_name(), r_s[i].is_final)
+
+            for j in r_t:
+                for e_s in j.get_end_states():
+                    output_fa.add_transition(j.get_start_state(), j.letter, e_s)
+
+        return output_fa
 
     @classmethod
     def convert(cls, dfa):

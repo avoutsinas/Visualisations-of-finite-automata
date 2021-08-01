@@ -155,8 +155,8 @@ def run_tests():
 
 
 def main():
-    #run_tests()
-    App.mainloop()
+    run_tests()
+    App().mainloop()
 
 
 if __name__ == "__main__":
