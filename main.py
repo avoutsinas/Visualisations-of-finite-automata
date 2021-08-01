@@ -155,7 +155,7 @@ def run_tests():
 
 
 def main():
-    run_tests()
+    #run_tests()
     App.mainloop()
 
 
