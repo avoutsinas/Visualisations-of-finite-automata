@@ -113,6 +113,95 @@ class App(Frame):
             self.states.append(new_state)
         print(self.states)
 
+    def create_transition(self, event):
+        x, y, r = event.x, event.y, self.radius
+        tags = self.input_canvas.gettags(tk.CURRENT)
+        name_tag = tags[0]
+        print(name_tag)
+
+        if len(self.transition_states) < 2:
+            if self.transition_states == [] and name_tag in [i.get_name() for i in self.states]:
+                if "label" in tags:
+                    self.input_canvas.addtag_withtag('start_point', tk.CURRENT)
+                    self.start_x = x
+                    self.start_y = y
+                    self.transition_states.append(name_tag)
+                    print("found starting point")
+                    print(tags)
+                    print(self.transition_states)
+
+            if len(self.transition_states) == 1 and name_tag in [i.get_name() for i in self.states]:
+                if name_tag != self.transition_states[0]:
+                    if "label" in tags:
+                        self.input_canvas.addtag_withtag('end_point', tk.CURRENT)
+                        self.end_x = x
+                        self.end_y = y
+                        self.transition_states.append(name_tag)
+                        print("found end point")
+                        print(tags)
+                        print(self.transition_states)
+
+                        self.draw_arrow(r)
+                        self.transition_states = []
+                elif name_tag == self.transition_states[0]:
+                    tag_to_add = ("self" + self.transition_states[0], "transition", "3")
+                    # self.input_canvas.create_line()
+            else:
+                self.transition_states = []
+
+    def draw_arrow(self, r):
+        if self.start_x < self.end_x:
+            tag_to_add = ("from" + self.transition_states[0], "to" + self.transition_states[1], "transition", "1")
+            """
+            self.input_canvas.create_line(self.start_x + r, self.start_y - r / 2, self.end_x - r, self.end_y - r / 2,
+                                          arrow=tk.LAST, tags=tag_to_add, fill="white") """
+
+            midx = (self.start_x + self.end_x) / 2
+            midy = (self.start_y + self.end_y) / 2 - np.abs(self.start_x - self.end_x) / 4
+
+            points = ((self.start_x + r, self.start_y - r / 2), (midx, midy), (self.end_x - r, self.end_y - r / 2))
+
+            transition_letters = simpledialog.askstring(title="Transition Creation",
+                                                        prompt="Specify the letter or letters that are used in this "
+                                                               "transition.\n\n Multiple letters should be seperated "
+                                                               "by commas.",
+                                                        parent=self.input_canvas)
+
+            if transition_letters not in ["", None]:
+                self.input_canvas.create_text(midx, midy - 1, text=transition_letters, fill="white", tags=(
+                    transition_letters, "text", "textfrom" + self.transition_states[0],
+                    "textto" + self.transition_states[1], "1"))
+
+                self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+            else:
+                self.transition_states = []
+
+        elif self.start_x > self.end_x:
+            tag_to_add = ("from" + self.transition_states[0], "to" + self.transition_states[1], "transition", "2")
+            """
+            self.input_canvas.create_line(self.start_x - r, self.start_y + r / 2, self.end_x + r, self.end_y + r / 2,
+                                          arrow=tk.LAST, tags=tag_to_add, fill="white") """
+
+            midx = (self.start_x + self.end_x) / 2
+            midy = (self.start_y + self.end_y) / 2 + np.abs(self.start_x - self.end_x) / 4
+
+            points = ((self.start_x - r, self.start_y + r / 2), (midx, midy), (self.end_x + r, self.end_y + r / 2))
+
+            transition_letters = simpledialog.askstring(title="Transition Creation",
+                                                        prompt="Specify the letter or letters that are used in this "
+                                                               "transition.\n\n Multiple letters should be seperated "
+                                                               "by commas.",
+                                                        parent=self.input_canvas)
+
+            if transition_letters not in ["", None]:
+                self.input_canvas.create_text(midx, midy + 1, text=transition_letters, fill="white", tags=(
+                    transition_letters, "text", "textfrom" + self.transition_states[0],
+                    "textto" + self.transition_states[1], "2"))
+
+                self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+            else:
+                self.transition_states = []
+
     def select_state(self, event):
         x, y = event.x, event.y
         self.input_canvas.bind('<Motion>', self.move_state)
@@ -133,6 +222,15 @@ class App(Frame):
 
             if "first" in self.input_canvas.gettags(tk.CURRENT):
                 self.input_canvas.addtag_withtag('selected_arrow', "arrow")
+
+    def deselect(self, event):
+        self.input_canvas.dtag('selected')  # removes the 'selected' tag
+        self.input_canvas.dtag('selected_txt')
+        self.input_canvas.dtag("selected_final")
+        self.input_canvas.dtag("selected_exit_transition")
+        self.input_canvas.dtag("selected_entry_transition")
+        self.input_canvas.unbind('<Motion>')
+        self.input_canvas.bind('<Shift-1>', self.create_state)
 
     def move_state(self, event):
         x, y, r, r2 = event.x, event.y, self.radius, self.radius - 3
@@ -204,102 +302,6 @@ class App(Frame):
                 for text in entry_arrow_text:
                     self.input_canvas.coords(text, midx, midy2)
 
-    def create_transition(self, event):
-        x, y, r = event.x, event.y, self.radius
-        tags = self.input_canvas.gettags(tk.CURRENT)
-        name_tag = tags[0]
-        print(name_tag)
-
-        if len(self.transition_states) < 2:
-            if self.transition_states == [] and name_tag in [i.get_name() for i in self.states]:
-                if "label" in tags:
-                    self.input_canvas.addtag_withtag('start_point', tk.CURRENT)
-                    self.start_x = x
-                    self.start_y = y
-                    self.transition_states.append(name_tag)
-                    print("found starting point")
-                    print(tags)
-                    print(self.transition_states)
-
-            if len(self.transition_states) == 1 and name_tag in [i.get_name() for i in self.states]:
-                if name_tag != self.transition_states[0]:
-                    if "label" in tags:
-                        self.input_canvas.addtag_withtag('end_point', tk.CURRENT)
-                        self.end_x = x
-                        self.end_y = y
-                        self.transition_states.append(name_tag)
-                        print("found end point")
-                        print(tags)
-                        print(self.transition_states)
-
-                        self.draw_arrow(r)
-                        self.transition_states = []
-                elif name_tag == self.transition_states[0]:
-                    tag_to_add = ("self" + self.transition_states[0], "transition", "3")
-                    # self.input_canvas.create_line()
-            else:
-                self.transition_states = []
-
-    def draw_arrow(self, r):
-        if self.start_x < self.end_x:
-            tag_to_add = ("from" + self.transition_states[0], "to" + self.transition_states[1], "transition", "1")
-            """
-            self.input_canvas.create_line(self.start_x + r, self.start_y - r / 2, self.end_x - r, self.end_y - r / 2,
-                                          arrow=tk.LAST, tags=tag_to_add, fill="white") """
-
-            midx = (self.start_x + self.end_x) / 2
-            midy = (self.start_y + self.end_y) / 2 - np.abs(self.start_x - self.end_x) / 4
-
-            points = ((self.start_x + r, self.start_y - r / 2), (midx, midy), (self.end_x - r, self.end_y - r / 2))
-
-            transition_letters = simpledialog.askstring(title="Transition Creation",
-                                                        prompt="Specify the letter or letters that are used in this "
-                                                               "transition.\n\n Multiple letters should be seperated "
-                                                               "by commas.",
-                                                        parent=self.input_canvas)
-
-            if transition_letters not in ["", None]:
-                self.input_canvas.create_text(midx, midy - 1, text=transition_letters, fill="white", tags=(
-                    transition_letters, "text", "textfrom" + self.transition_states[0], "textto" + self.transition_states[1], "1"))
-
-                self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
-            else:
-                self.transition_states = []
-
-        elif self.start_x > self.end_x:
-            tag_to_add = ("from" + self.transition_states[0], "to" + self.transition_states[1], "transition", "2")
-            """
-            self.input_canvas.create_line(self.start_x - r, self.start_y + r / 2, self.end_x + r, self.end_y + r / 2,
-                                          arrow=tk.LAST, tags=tag_to_add, fill="white") """
-
-            midx = (self.start_x + self.end_x) / 2
-            midy = (self.start_y + self.end_y) / 2 + np.abs(self.start_x - self.end_x) / 4
-
-            points = ((self.start_x - r, self.start_y + r / 2), (midx, midy), (self.end_x + r, self.end_y + r / 2))
-
-            transition_letters = simpledialog.askstring(title="Transition Creation",
-                                                        prompt="Specify the letter or letters that are used in this "
-                                                               "transition.\n\n Multiple letters should be seperated "
-                                                               "by commas.",
-                                                        parent=self.input_canvas)
-
-            if transition_letters not in ["", None]:
-                self.input_canvas.create_text(midx, midy + 1, text=transition_letters, fill="white", tags=(
-                    transition_letters,"text", "textfrom" + self.transition_states[0], "textto" + self.transition_states[1], "2"))
-
-                self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
-            else:
-                self.transition_states = []
-
-    def deselect(self, event):
-        self.input_canvas.dtag('selected')  # removes the 'selected' tag
-        self.input_canvas.dtag('selected_txt')
-        self.input_canvas.dtag("selected_final")
-        self.input_canvas.dtag("selected_exit_transition")
-        self.input_canvas.dtag("selected_entry_transition")
-        self.input_canvas.unbind('<Motion>')
-        self.input_canvas.bind('<Shift-1>', self.create_state)
-
     def clear_input(self, event):
-        self.input_canvas.delete("circle", "arrow", "label", "transition","text")
+        self.input_canvas.delete("circle", "arrow", "label", "transition", "text")
         self.states = []
