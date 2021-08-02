@@ -62,21 +62,26 @@ class App(Frame):
         self.input_canvas.bind('<Control-1>', self.create_transition)
 
     def create_state(self, event):
-        new_state = ""
+        new_state = None
+        final = None
+
         state_name = simpledialog.askstring(title="State Creation", prompt="Enter the name of the State",
                                             parent=self.input_canvas)
-        final = simpledialog.askinteger(title="State Creation", prompt="Is this a final state?",
-                                        parent=self.input_canvas)
 
-        while state_name == "" or state_name in [i.get_name() for i in self.states]:
-            state_name = simpledialog.askstring(title="State Creation", prompt="States must have non-empty and unique "
-                                                                               "names.\n\n" "Please select a unique "
-                                                                               "name for this state",
-                                                parent=self.input_canvas)
-        while final not in [0, 1, None]:
-            final = simpledialog.askinteger(title="State Creation", prompt="Please enter 0 for non-final\nor 1 for "
-                                                                           "final",
+        if state_name is not None:
+            final = simpledialog.askinteger(title="State Creation", prompt="Is this a final state?",
                                             parent=self.input_canvas)
+
+            while state_name == "" or state_name in [i.get_name() for i in self.states]:
+                state_name = simpledialog.askstring(title="State Creation",
+                                                    prompt="States must have non-empty and unique "
+                                                           "names.\n\n" "Please select a unique "
+                                                           "name for this state",
+                                                    parent=self.input_canvas)
+            while final not in [0, 1, None]:
+                final = simpledialog.askinteger(title="State Creation", prompt="Please enter 0 for non-final\nor 1 for "
+                                                                               "final",
+                                                parent=self.input_canvas)
 
         if state_name is not None and final is not None:
             x, y, r, r2 = event.x, event.y, self.radius, self.radius - 3
@@ -141,17 +146,34 @@ class App(Frame):
             if "first" in self.input_canvas.gettags(tk.CURRENT) and "label" in tags:
                 self.input_canvas.coords("selected_arrow", x - r, y, x - 2.2 * r, y)
 
-            exit_arrows = self.input_canvas.find_withtag("from" + name_tag)
-            print(exit_arrows)
-            exit = self.input_canvas.coords("selected_exit_transition")
-            if len(exit) > 0:
-                x1, y1, x2, y2 = self.input_canvas.coords("selected_exit_transition")
-                self.input_canvas.coords("selected_exit_transition", x + r, y, x2, y2)
+            self.move_state_transitions(name_tag, x, y, r)
 
-            entry = self.input_canvas.coords("selected_entry_transition")
-            if len(entry) > 0:
-                x3, y3, x4, y4 = entry
-                self.input_canvas.coords("selected_entry_transition", x3, y3, x - r, y)
+    def move_state_transitions(self, name_tag, x, y, r):
+        exit_arrows = self.input_canvas.find_withtag("from" + name_tag)
+        print(exit_arrows)
+        for item in exit_arrows:
+            exiting = self.input_canvas.coords(item)
+            print(exiting)
+            x1, y1, x2, y2 = exiting
+            if "1" in self.input_canvas.gettags(item):
+                if x >= x2:
+                    self.input_canvas.coords(item, x - 0.9 * r, y - 0.5 * r, x2, y2)
+                else:
+                    self.input_canvas.coords(item, x + 0.9 * r, y - 0.5 * r, x2, y2)
+            elif "2" in self.input_canvas.gettags(item):
+                if x >= x2:
+                    self.input_canvas.coords(item, x - 0.9 * r, y + 0.5 * r, x2, y2)
+                else:
+                    self.input_canvas.coords(item, x + 0.9 * r, y + 0.5 * r, x2, y2)
+
+        entry_arrows = self.input_canvas.find_withtag("to" + name_tag)
+        for item in entry_arrows:
+            entry = self.input_canvas.coords(item)
+            x3, y3, x4, y4 = entry
+            if x >= x4:
+                self.input_canvas.coords(item, x3, y3, x - 0.9 * r, y - 0.5 * r)
+            else:
+                self.input_canvas.coords(item, x3, y3, x + 0.9 * r, y + 0.5 * r)
 
     def create_transition(self, event):
         x, y, r = event.x, event.y, self.radius
@@ -181,18 +203,38 @@ class App(Frame):
                         print(tags)
                         print(self.found_state)
 
-                        if self.start_x < self.end_x:
-                            self.input_canvas.create_line(self.start_x + r, self.start_y, self.end_x - r, self.end_y,
-                                                          arrow=tk.LAST, tags=(
-                                    "from" + self.found_state[0], "to" + self.found_state[1],
-                                    "transition"))
-                        else:
-                            self.input_canvas.create_line(self.start_x - r, self.start_y, self.end_x + r, self.end_y,
-                                                          arrow=tk.LAST, tags=(
-                                    "from" + self.found_state[0], "to" + self.found_state[1],
-                                    "transition"))
-
+                        self.add_arrow(r)
                         self.found_state = []
+                elif name_tag == self.found_state[0]:
+                    tag_to_add = ("self" + self.found_state[0], "transition", "3")
+                    # self.input_canvas.create_line()
+            else:
+                self.found_state = []
+
+    def add_arrow(self, r):
+        if self.start_x < self.end_x:
+            tag_to_add = ("from" + self.found_state[0], "to" + self.found_state[1], "transition", "1")
+            #self.input_canvas.create_line(self.start_x + r, self.start_y - r / 2, self.end_x - r,
+                                          #self.end_y - r / 2,
+                                          #arrow=tk.LAST, tags=tag_to_add, fill="white")
+
+            midx = (self.start_x + self.end_x) / 2
+            midy = (self.start_y + self.end_y) / 2 - np.abs(self.start_x - self.end_x) / 4
+
+            points = ((self.start_x + r, self.start_y - r / 2), (midx, midy), (self.end_x - r, self.end_y - r / 2))
+            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white",tags=tag_to_add)
+
+        elif self.start_x > self.end_x:
+            tag_to_add = ("from" + self.found_state[0], "to" + self.found_state[1], "transition", "2")
+            #self.input_canvas.create_line(self.start_x - r, self.start_y + r / 2, self.end_x + r,
+                                          #self.end_y + r / 2,
+                                          #arrow=tk.LAST, tags=tag_to_add, fill="white")
+
+            midx = (self.start_x + self.end_x) / 2
+            midy = (self.start_y + self.end_y) / 2 + np.abs(self.start_x - self.end_x) / 4
+
+            points = ((self.start_x - r, self.start_y + r / 2), (midx, midy), (self.end_x + r, self.end_y + r / 2))
+            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white",tags=tag_to_add)
 
     def deselect(self, event):
         self.input_canvas.dtag('selected')  # removes the 'selected' tag
