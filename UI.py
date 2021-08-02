@@ -87,7 +87,8 @@ class App(Frame):
             x, y, r, r2 = event.x, event.y, self.radius, self.radius - 3
 
             if not self.states:
-                self.input_canvas.create_line(x - r, y, x - 2.2 * r, y, arrow=tk.FIRST, tags=(state_name, "arrow"))
+                self.input_canvas.create_line(x - r, y, x - 2.2 * r, y, arrow=tk.FIRST, tags=(state_name, "arrow"),
+                                              fill="white", width=1.45)
                 self.input_canvas.create_oval(x - r, y - r, x + r, y + r, outline='black', fill='beige',
                                               tags=(state_name, "circle", "first"))
                 self.input_canvas.create_text(x, y, text=state_name, fill="black", tags=(state_name, "first", "label"))
@@ -153,7 +154,7 @@ class App(Frame):
         print(exit_arrows)
         for item in exit_arrows:
             exiting = self.input_canvas.coords(item)
-            #print("exiting arrow: " + str(exiting))
+            # print("exiting arrow: " + str(exiting))
             x1, y1, x2, y2, x3, y3 = exiting
             midx = (x + x3) / 2
 
@@ -179,10 +180,10 @@ class App(Frame):
             midx = (x4 + x) / 2
             if x >= x4:
                 midy = (y + y4) / 2 - np.abs(x - x4) / 4
-                self.input_canvas.coords(item, x4, y4, midx, midy, x-r, y - r / 2)
+                self.input_canvas.coords(item, x4, y4, midx, midy, x - r, y - r / 2)
             else:
                 midy = (y + y4) / 2 + np.abs(x - x4) / 4
-                self.input_canvas.coords(item, x4, y4, midx, midy, x+r, y - r / 2)
+                self.input_canvas.coords(item, x4, y4, midx, midy, x + r, y + r / 2)
 
     def create_transition(self, event):
         x, y, r = event.x, event.y, self.radius
@@ -212,7 +213,7 @@ class App(Frame):
                         print(tags)
                         print(self.found_state)
 
-                        self.add_arrow(r)
+                        self.draw_arrow(r)
                         self.found_state = []
                 elif name_tag == self.found_state[0]:
                     tag_to_add = ("self" + self.found_state[0], "transition", "3")
@@ -220,7 +221,7 @@ class App(Frame):
             else:
                 self.found_state = []
 
-    def add_arrow(self, r):
+    def draw_arrow(self, r):
         if self.start_x < self.end_x:
             tag_to_add = ("from" + self.found_state[0], "to" + self.found_state[1], "transition", "1")
             """
@@ -231,7 +232,7 @@ class App(Frame):
             midy = (self.start_y + self.end_y) / 2 - np.abs(self.start_x - self.end_x) / 4
 
             points = ((self.start_x + r, self.start_y - r / 2), (midx, midy), (self.end_x - r, self.end_y - r / 2))
-            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add)
+            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
 
         elif self.start_x > self.end_x:
             tag_to_add = ("from" + self.found_state[0], "to" + self.found_state[1], "transition", "2")
@@ -243,7 +244,7 @@ class App(Frame):
             midy = (self.start_y + self.end_y) / 2 + np.abs(self.start_x - self.end_x) / 4
 
             points = ((self.start_x - r, self.start_y + r / 2), (midx, midy), (self.end_x + r, self.end_y + r / 2))
-            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add)
+            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
 
     def deselect(self, event):
         self.input_canvas.dtag('selected')  # removes the 'selected' tag
