@@ -153,27 +153,36 @@ class App(Frame):
         print(exit_arrows)
         for item in exit_arrows:
             exiting = self.input_canvas.coords(item)
-            print(exiting)
-            x1, y1, x2, y2 = exiting
+            #print("exiting arrow: " + str(exiting))
+            x1, y1, x2, y2, x3, y3 = exiting
+            midx = (x + x3) / 2
+
             if "1" in self.input_canvas.gettags(item):
                 if x >= x2:
-                    self.input_canvas.coords(item, x - 0.9 * r, y - 0.5 * r, x2, y2)
+                    midy = (y + y3) / 2 + np.abs(x - x3) / 4
+                    self.input_canvas.coords(item, x - r, y + r / 2, midx, midy, x3, y3)
                 else:
-                    self.input_canvas.coords(item, x + 0.9 * r, y - 0.5 * r, x2, y2)
+                    midy = (y + y3) / 2 - np.abs(x - x3) / 4
+                    self.input_canvas.coords(item, x + r, y - r / 2, midx, midy, x3, y3)
             elif "2" in self.input_canvas.gettags(item):
                 if x >= x2:
-                    self.input_canvas.coords(item, x - 0.9 * r, y + 0.5 * r, x2, y2)
+                    midy = (y + y3) / 2 + np.abs(x - x3) / 4
+                    self.input_canvas.coords(item, x - r, y + r / 2, midx, midy, x3, y3)
                 else:
-                    self.input_canvas.coords(item, x + 0.9 * r, y + 0.5 * r, x2, y2)
+                    midy = (y + y3) / 2 - np.abs(x - x3) / 4
+                    self.input_canvas.coords(item, x + r, y - r / 2, midx, midy, x3, y3)
 
         entry_arrows = self.input_canvas.find_withtag("to" + name_tag)
         for item in entry_arrows:
             entry = self.input_canvas.coords(item)
-            x3, y3, x4, y4 = entry
+            x4, y4, x5, y5, x6, y6 = entry
+            midx = (x4 + x) / 2
             if x >= x4:
-                self.input_canvas.coords(item, x3, y3, x - 0.9 * r, y - 0.5 * r)
+                midy = (y + y4) / 2 - np.abs(x - x4) / 4
+                self.input_canvas.coords(item, x4, y4, midx, midy, x-r, y - r / 2)
             else:
-                self.input_canvas.coords(item, x3, y3, x + 0.9 * r, y + 0.5 * r)
+                midy = (y + y4) / 2 + np.abs(x - x4) / 4
+                self.input_canvas.coords(item, x4, y4, midx, midy, x+r, y - r / 2)
 
     def create_transition(self, event):
         x, y, r = event.x, event.y, self.radius
@@ -214,27 +223,27 @@ class App(Frame):
     def add_arrow(self, r):
         if self.start_x < self.end_x:
             tag_to_add = ("from" + self.found_state[0], "to" + self.found_state[1], "transition", "1")
-            #self.input_canvas.create_line(self.start_x + r, self.start_y - r / 2, self.end_x - r,
-                                          #self.end_y - r / 2,
-                                          #arrow=tk.LAST, tags=tag_to_add, fill="white")
+            """
+            self.input_canvas.create_line(self.start_x + r, self.start_y - r / 2, self.end_x - r, self.end_y - r / 2,
+                                          arrow=tk.LAST, tags=tag_to_add, fill="white") """
 
             midx = (self.start_x + self.end_x) / 2
             midy = (self.start_y + self.end_y) / 2 - np.abs(self.start_x - self.end_x) / 4
 
             points = ((self.start_x + r, self.start_y - r / 2), (midx, midy), (self.end_x - r, self.end_y - r / 2))
-            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white",tags=tag_to_add)
+            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add)
 
         elif self.start_x > self.end_x:
             tag_to_add = ("from" + self.found_state[0], "to" + self.found_state[1], "transition", "2")
-            #self.input_canvas.create_line(self.start_x - r, self.start_y + r / 2, self.end_x + r,
-                                          #self.end_y + r / 2,
-                                          #arrow=tk.LAST, tags=tag_to_add, fill="white")
+            """
+            self.input_canvas.create_line(self.start_x - r, self.start_y + r / 2, self.end_x + r, self.end_y + r / 2,
+                                          arrow=tk.LAST, tags=tag_to_add, fill="white") """
 
             midx = (self.start_x + self.end_x) / 2
             midy = (self.start_y + self.end_y) / 2 + np.abs(self.start_x - self.end_x) / 4
 
             points = ((self.start_x - r, self.start_y + r / 2), (midx, midy), (self.end_x + r, self.end_y + r / 2))
-            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white",tags=tag_to_add)
+            self.input_canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add)
 
     def deselect(self, event):
         self.input_canvas.dtag('selected')  # removes the 'selected' tag
