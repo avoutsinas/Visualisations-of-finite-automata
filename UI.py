@@ -152,7 +152,7 @@ class App(Frame):
 
     def draw_self_transition(self, event, r):
         tag_to_add = ("self" + self.transition_states[0], "self_transition")
-        tag_to_add_txt = (str((*tag_to_add, "text")), "text")
+        tag_to_add_txt = ("self" + self.transition_states[0] + "text", "text")
 
         x1 = self.start_x - 0.9 * r
         y1 = y2 = self.start_y - 0.5 * r
@@ -234,9 +234,8 @@ class App(Frame):
             event.widget.addtag_withtag('selected_txt', tk.CURRENT)
             event.widget.addtag_closest('selected', x, y, halo=13, start=tk.CURRENT)
             event.widget.addtag_withtag("selected_final", name_tag + "final")
-            # event.widget.addtag_withtag("selected_exit_transition", "from_" + name_tag)
-            # event.widget.addtag_withtag("selected_entry_transition", "to_" + name_tag)
-            # print(event.widget.gettags(tk.CURRENT))
+            event.widget.addtag_withtag("selected_self_transition", "self" + name_tag)
+            event.widget.addtag_withtag("selected_self_transition_text", "self" + name_tag + "text")
 
             if "first" in event.widget.gettags(tk.CURRENT):
                 event.widget.addtag_withtag('selected_arrow', "arrow")
@@ -245,8 +244,8 @@ class App(Frame):
         event.widget.dtag('selected')  # removes the 'selected' tag
         event.widget.dtag('selected_txt')
         event.widget.dtag("selected_final")
-        event.widget.dtag("selected_exit_transition")
-        event.widget.dtag("selected_entry_transition")
+        event.widget.dtag("selected_self_transition")
+        event.widget.dtag("selected_self_transition_text")
         event.widget.unbind('<Motion>')
         event.widget.bind('<Shift-1>', self.create_state)
 
@@ -260,6 +259,16 @@ class App(Frame):
             event.widget.coords('selected', x - r, y - r, x + r, y + r)
             event.widget.coords('selected_txt', x, y)
             event.widget.coords("selected_final", x - r2, y - r2, x + r2, y + r2)
+
+            # coords for self-transitions
+            x1 = x - 0.9 * r
+            y1 = y - 0.5 * r
+            x2 = x + 0.9 * r
+            midx = (x1 + x2) / 2
+            midy = (y1 - 3 * r)
+
+            event.widget.coords("selected_self_transition", x1, y1, midx, midy, x2, y1)
+            event.widget.coords("selected_self_transition_text", midx,midy+15)
             if "first" in tags:
                 event.widget.coords("selected_arrow", x - r, y, x - 2.2 * r, y)
 
@@ -307,7 +316,6 @@ class App(Frame):
     @staticmethod
     def move_inbound_transitions(event, name_tag, x, y, r):
         entry_arrows = event.widget.find_withtag("to_" + name_tag)
-        entry_arrow_text = event.widget.find_withtag("text_to" + name_tag)
 
         for item in entry_arrows:
             entry = event.widget.coords(item)
