@@ -154,8 +154,9 @@ def run_tests():
     Minimise().convert(dfa3)
 
 
-def main():
-    run_tests()
+def main(test=False):
+    if test:
+        run_tests()
     App().mainloop()
 
 

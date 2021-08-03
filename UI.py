@@ -28,20 +28,24 @@ class App(Frame):
         self.main_canvas.pack(expand=Y, fill=BOTH)
 
         self.input_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
-                                      bg='white')
+                                      bg='white', highlightthickness=5, highlightbackground="black",
+                                      highlightcolor="black")
         self.input_canvas.create_image(0, 0, image=self.bg1, anchor="nw")
         self.input_canvas.pack()
 
         self.output_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
-                                       bg='white')
+                                       bg='white', highlightthickness=5, highlightbackground="black",
+                                       highlightcolor="black")
         self.output_canvas.create_image(0, 0, image=self.bg2, anchor="nw")
         self.output_canvas.pack()
 
-        self.input_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435, bg='white')
+        self.input_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435, bg='white',
+                                      highlightthickness=5, highlightbackground="black", highlightcolor="black")
         self.input_window.pack()
 
         self.output_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
-                                       bg='white')
+                                       bg='white', highlightthickness=5, highlightbackground="black",
+                                       highlightcolor="black")
         self.output_window.pack()
 
         self.setup()
@@ -54,8 +58,12 @@ class App(Frame):
         self.transition_states = []
 
     def setup(self):
-        self.main_canvas.create_window(390, 35, anchor=NW, window=self.input_canvas)
-        self.main_canvas.create_window(390, 420, anchor=NW, window=self.output_canvas)
+        self.winfo_toplevel().title("VoFA")
+        label = Entry(self)
+        # label.pack(side="top", fill="x")
+
+        self.main_canvas.create_window(380, 35, anchor=NW, window=self.input_canvas)
+        self.main_canvas.create_window(380, 420, anchor=NW, window=self.output_canvas)
         self.main_canvas.create_window(25, 35, anchor=NW, window=self.input_window)
         self.main_canvas.create_window(25, 420, anchor=NW, window=self.output_window)
 
