@@ -188,6 +188,7 @@ class App(Frame):
                         print(self.transitions)
 
     def draw_transition(self, event, r):
+        existing_arrows = midx = y_txt = tag_to_add = tag_to_add_txt = points = None
         input_prompt = "Specify the letter or letters that are used in this transition.\n\n " \
                        "Multiple letters should be seperated by commas."
 
@@ -198,17 +199,8 @@ class App(Frame):
 
             midx = (self.start_x + self.end_x) / 2
             midy = (self.start_y + self.end_y) / 2 - np.abs(self.start_x - self.end_x) / 6
-
+            y_txt = midy - 1
             points = ((self.start_x + r, self.start_y - r / 2), (midx, midy), (self.end_x - r, self.end_y - r / 2))
-
-            if existing_arrows == ():
-                transition_letters = simpledialog.askstring(title="Transition Creation", prompt=input_prompt,
-                                                            parent=event.widget)
-
-                if transition_letters not in ["", None]:
-                    event.widget.create_text(midx, midy - 1, text=transition_letters, fill="white", tags=tag_to_add_txt)
-
-                    event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
 
         elif self.start_x > self.end_x:
             tag_to_add = ("from_" + self.transition_states[0], "to_" + self.transition_states[1], "transition", "2")
@@ -217,17 +209,15 @@ class App(Frame):
 
             midx = (self.start_x + self.end_x) / 2
             midy = (self.start_y + self.end_y) / 2 + np.abs(self.start_x - self.end_x) / 6
-
+            y_txt = midy + 1
             points = ((self.start_x - r, self.start_y + r / 2), (midx, midy), (self.end_x + r, self.end_y + r / 2))
 
-            if existing_arrows == ():
-                transition_letters = simpledialog.askstring(title="Transition Creation", prompt=input_prompt,
-                                                            parent=event.widget)
-
-                if transition_letters not in ["", None]:
-                    event.widget.create_text(midx, midy + 1, text=transition_letters, fill="white", tags=tag_to_add_txt)
-
-                    event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+        if existing_arrows == ():
+            transition_letters = simpledialog.askstring(title="Transition Creation", prompt=input_prompt,
+                                                        parent=event.widget)
+            if transition_letters not in ["", None]:
+                event.widget.create_text(midx, y_txt, text=transition_letters, fill="white", tags=tag_to_add_txt)
+                event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
 
     def select_state(self, event):
         x, y = event.x, event.y
@@ -337,7 +327,6 @@ class App(Frame):
             midx2 = (x4 + x + r) / 2
             midy1 = (y + y4) / 2 - np.abs(x - x4) / 6
             midy2 = (y + y4) / 2 + np.abs(x - x4) / 6
-            entry_coords, entry_coords_txt = None, None
 
             if x >= x4:
                 entry_coords = (x4, y4, midx1, midy1, x - r, y - r / 2)
