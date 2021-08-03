@@ -18,8 +18,10 @@ class App(Frame):
         self.width = 1400
         self.height = 850
 
-        self.image = Image.open("images//Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
-        self.bg = ImageTk.PhotoImage(self.image)
+        self.image1 = Image.open("images//Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
+        self.image2 = Image.open("images//Blackboard2.jpg").resize((self.width, self.height), Image.ANTIALIAS)
+        self.bg1 = ImageTk.PhotoImage(self.image1)
+        self.bg2 = ImageTk.PhotoImage(self.image2)
 
         self.main_canvas = Canvas(self, width=self.width, height=self.height, bg="gray")
         # self.main_canvas.create_image(0,0,image=self.bg, anchor="nw")
@@ -27,12 +29,12 @@ class App(Frame):
 
         self.input_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
                                       bg='white')
-        self.input_canvas.create_image(0, 0, image=self.bg, anchor="nw")
+        self.input_canvas.create_image(0, 0, image=self.bg1, anchor="nw")
         self.input_canvas.pack()
 
         self.output_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
                                        bg='white')
-        self.output_canvas.create_image(0, 0, image=self.bg, anchor="nw")
+        self.output_canvas.create_image(0, 0, image=self.bg2, anchor="nw")
         self.output_canvas.pack()
 
         self.input_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435, bg='white')
@@ -161,7 +163,7 @@ class App(Frame):
         midx = (x1 + x2) / 2
         midy = (y1 - 3 * r)
 
-        points = ((x1, y1), (midx, midy), (x2, y2))
+        points = ((x1, y1), (midx / 2, midy / 2), (midx, midy),(1.5*midx,1.5*midy), (x2, y2))
 
         transition_letters = simpledialog.askstring(title="Transition Creation",
                                                     prompt="Specify the letter or letters that are used in this "
@@ -268,7 +270,7 @@ class App(Frame):
             midy = (y1 - 3 * r)
 
             event.widget.coords("selected_self_transition", x1, y1, midx, midy, x2, y1)
-            event.widget.coords("selected_self_transition_text", midx,midy+15)
+            event.widget.coords("selected_self_transition_text", midx, midy + 15)
             if "first" in tags:
                 event.widget.coords("selected_arrow", x - r, y, x - 2.2 * r, y)
 
