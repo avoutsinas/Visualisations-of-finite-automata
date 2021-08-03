@@ -64,6 +64,7 @@ class App(Frame):
 
     def create_state(self, event):
         new_state = None
+        starting = False
         final = None
         font = tkFont.Font(family="calibri", size=13)
 
@@ -90,6 +91,7 @@ class App(Frame):
             x, y, r, r2 = event.x, event.y, self.radius, self.radius - 3
 
             if not self.states:
+                starting = True
                 event.widget.create_line(x - r, y, x - 2.2 * r, y, arrow=tk.FIRST, tags=(state_name, "arrow"),
                                          fill="white", width=1.45)
                 event.widget.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
@@ -106,9 +108,9 @@ class App(Frame):
                 event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
                                          tags=(state_name + "final", "circle"), width=1.4)
 
-                new_state = State(state_name, False, True)
+                new_state = State(state_name, starting, True)
             else:
-                new_state = State(state_name, False, False)
+                new_state = State(state_name, starting, False)
 
         if state_name not in ["", None] and final is not None:
             self.states.append(new_state)
