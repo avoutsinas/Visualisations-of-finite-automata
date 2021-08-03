@@ -1,3 +1,5 @@
+import tkinter
+
 import numpy as np
 import tkinter as tk
 import tkinter.font as tkFont
@@ -153,8 +155,10 @@ class App(Frame):
                 self.transition_states = []
 
     def draw_self_transition(self, event, r):
-        tag_to_add = ("self" + self.transition_states[0], "self_transition")
-        tag_to_add_txt = ("self" + self.transition_states[0] + "text", "text")
+        state = None
+        state_name = self.transition_states[0]
+        tag_to_add = ("self" + state_name, "self_transition")
+        tag_to_add_txt = ("self" + state_name + "text", "text")
 
         x1 = self.start_x - 0.9 * r
         y1 = y2 = self.start_y - 0.5 * r
@@ -165,17 +169,25 @@ class App(Frame):
 
         points = ((x1, y1), (midx, midy), (x2, y2))
 
-        transition_letters = simpledialog.askstring(title="Transition Creation",
-                                                    prompt="Specify the letter or letters that are used in this "
-                                                           "transition.\n\n Multiple letters should be seperated "
-                                                           "by commas.",
-                                                    parent=event.widget)
-        if transition_letters not in ["", None]:
-            event.widget.create_text(midx, midy + 15, text=transition_letters, fill="white", tags=tag_to_add_txt)
+        if "s_t" not in event.widget.gettags(tk.CURRENT):
+            transition_letters = simpledialog.askstring(title="Transition Creation",
+                                                        prompt="Specify the letter or letters that are used in this "
+                                                               "transition.\n\n Multiple letters should be seperated "
+                                                               "by commas.",
+                                                        parent=event.widget)
+            if transition_letters not in ["", None]:
+                event.widget.create_text(midx, midy + 15, text=transition_letters, fill="white", tags=tag_to_add_txt)
 
-            event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
-        else:
-            self.transition_states = []
+                event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+                event.widget.addtag_withtag("s_t", tk.CURRENT)
+                for s in self.states:
+                    if s.get_name() == state_name:
+                        state = s
+                        break
+                for letter in transition_letters:
+                    if letter not in [",", "", " "] and state is not None:
+                        self.transitions.append((state, letter, state))
+                        print(self.transitions)
 
     def draw_transition(self, event, r):
         if self.start_x <= self.end_x:
@@ -187,7 +199,7 @@ class App(Frame):
             midy = (self.start_y + self.end_y) / 2 - np.abs(self.start_x - self.end_x) / 6
 
             points = ((self.start_x + r, self.start_y - r / 2), (midx, midy), (self.end_x - r, self.end_y - r / 2))
-
+            print(event.widget.find_withtag(tag_to_add_txt))
             transition_letters = simpledialog.askstring(title="Transition Creation",
                                                         prompt="Specify the letter or letters that are used in this "
                                                                "transition.\n\n Multiple letters should be seperated "
@@ -291,26 +303,27 @@ class App(Frame):
 
             exiting = event.widget.coords(item)
             x1, y1, x2, y2, x3, y3 = exiting
-            midx = (x + x3) / 2
+            midx1 = (x - r + x3) / 2
+            midx2 = (x + r + x3) / 2
             midy1 = (y + y3) / 2 + np.abs(x - x3) / 6
             midy2 = (y + y3) / 2 - np.abs(x - x3) / 6
             exit_coords, exit_coords_txt = None, None
 
             if "1" in event.widget.gettags(item):
                 if x >= x2:
-                    exit_coords = (x - r, y + r / 2, midx, midy1, x3, y3)
-                    exit_coords_txt = (midx, midy1)
+                    exit_coords = (x - r, y + r / 2, midx1, midy1, x3, y3)
+                    exit_coords_txt = (midx1, midy1)
                 else:
-                    exit_coords = (x + r, y - r / 2, midx, midy2, x3, y3)
-                    exit_coords_txt = (midx, midy2)
+                    exit_coords = (x + r, y - r / 2, midx2, midy2, x3, y3)
+                    exit_coords_txt = (midx2, midy2)
 
             elif "2" in event.widget.gettags(item):
                 if x >= x2:
-                    exit_coords = (x - r, y + r / 2, midx, midy1, x3, y3)
-                    exit_coords_txt = (midx, midy1)
+                    exit_coords = (x - r, y + r / 2, midx1, midy1, x3, y3)
+                    exit_coords_txt = (midx1, midy1)
                 else:
-                    exit_coords = (x + r, y - r / 2, midx, midy2, x3, y3)
-                    exit_coords_txt = (midx, midy2)
+                    exit_coords = (x + r, y - r / 2, midx2, midy2, x3, y3)
+                    exit_coords_txt = (midx2, midy2)
 
             event.widget.coords(item, *exit_coords)
             event.widget.coords(text, *exit_coords_txt)
@@ -326,17 +339,18 @@ class App(Frame):
             text = event.widget.find_withtag(text_tag)
 
             x4, y4, x5, y5, x6, y6 = entry
-            midx = (x4 + x) / 2
+            midx1 = (x4 + x - r) / 2
+            midx2 = (x4 + x + r) / 2
             midy1 = (y + y4) / 2 - np.abs(x - x4) / 6
             midy2 = (y + y4) / 2 + np.abs(x - x4) / 6
             entry_coords, entry_coords_txt = None, None
 
             if x >= x4:
-                entry_coords = (x4, y4, midx, midy1, x - r, y - r / 2)
-                entry_coords_txt = (midx, midy1)
+                entry_coords = (x4, y4, midx1, midy1, x - r, y - r / 2)
+                entry_coords_txt = (midx1, midy1)
             else:
-                entry_coords = (x4, y4, midx, midy2, x + r, y + r / 2)
-                entry_coords_txt = (midx, midy2)
+                entry_coords = (x4, y4, midx2, midy2, x + r, y + r / 2)
+                entry_coords_txt = (midx2, midy2)
 
             event.widget.coords(item, *entry_coords)
             event.widget.coords(text, *entry_coords_txt)
