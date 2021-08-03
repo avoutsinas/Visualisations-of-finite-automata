@@ -163,7 +163,7 @@ class App(Frame):
         midx = (x1 + x2) / 2
         midy = (y1 - 3 * r)
 
-        points = ((x1, y1), (midx / 2, midy / 2), (midx, midy),(1.5*midx,1.5*midy), (x2, y2))
+        points = ((x1, y1), (midx, midy), (x2, y2))
 
         transition_letters = simpledialog.askstring(title="Transition Creation",
                                                     prompt="Specify the letter or letters that are used in this "
