@@ -1,5 +1,6 @@
 import numpy as np
 import tkinter as tk
+import tkinter.font as tkFont
 from tkinter import *
 from tkinter import simpledialog
 from PIL import Image, ImageTk
@@ -64,6 +65,7 @@ class App(Frame):
     def create_state(self, event):
         new_state = None
         final = None
+        font = tkFont.Font(family="calibri", size=12)
 
         state_name = simpledialog.askstring(title="State Creation", prompt="Enter the name of the State",
                                             parent=event.widget)
@@ -91,24 +93,20 @@ class App(Frame):
                 event.widget.create_line(x - r, y, x - 2.2 * r, y, arrow=tk.FIRST, tags=(state_name, "arrow"),
                                          fill="white", width=1.45)
                 event.widget.create_oval(x - r, y - r, x + r, y + r, outline='black', fill='beige',
-                                         tags=(state_name, "circle", "first"))
-                event.widget.create_text(x, y, text=state_name, fill="black", tags=(state_name, "first", "label"))
-                if final == 1:
-                    new_state = State(state_name, True, True)
-                    event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='black', fill='',
-                                             tags=(state_name + "final", "circle"))
-                else:
-                    new_state = State(state_name, True, False)
+                                         tags=(state_name, "circle", "first"), width=1.4)
+                event.widget.create_text(x, y, text=state_name, fill="black", tags=(state_name, "first", "label"),
+                                         font=font)
             else:
                 event.widget.create_oval(x - r, y - r, x + r, y + r, outline='black', fill='beige',
-                                         tags=(state_name, "circle"))
-                event.widget.create_text(x, y, text=state_name, fill="black", tags=(state_name, "label"))
-                if final == 1:
-                    new_state = State(state_name, False, True)
-                    event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='black', fill='',
-                                             tags=(state_name + "final", "circle"))
-                else:
-                    new_state = State(state_name, False, False)
+                                         tags=(state_name, "circle"), width=1.4)
+                event.widget.create_text(x, y, text=state_name, fill="black", tags=(state_name, "label"), font=font)
+            if final == 1:
+                event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='black', fill='',
+                                         tags=(state_name + "final", "circle"), width=1.4)
+
+                new_state = State(state_name, False, True)
+            else:
+                new_state = State(state_name, False, False)
 
         if state_name not in ["", None] and final is not None:
             self.states.append(new_state)
@@ -236,7 +234,7 @@ class App(Frame):
             event.widget.coords('selected', x - r, y - r, x + r, y + r)
             event.widget.coords('selected_txt', x, y)
             event.widget.coords("selected_final", x - r2, y - r2, x + r2, y + r2)
-            if "first" in event.widget.gettags(tk.CURRENT) and "label" in tags:
+            if "first" in tags:
                 event.widget.coords("selected_arrow", x - r, y, x - 2.2 * r, y)
 
             self.move_state_transitions(event, name_tag, x, y, r)
@@ -289,20 +287,19 @@ class App(Frame):
     def move_inbound_transitions(event, name_tag, x, y, r):
         entry_arrows = event.widget.find_withtag("to" + name_tag)
         entry_arrow_text = event.widget.find_withtag("text_to" + name_tag)
+
         for item in entry_arrows:
+            moved = False
             entry = event.widget.coords(item)
-            print(entry)
 
             x4, y4, x5, y5, x6, y6 = entry
             midx = (x4 + x) / 2
             midy1 = (y + y4) / 2 - np.abs(x - x4) / 6
             midy2 = (y + y4) / 2 + np.abs(x - x4) / 6
             entry_coords = None
-            print("opp x4 = " + str(x4 + r))
-            opp_x4 = x4 + r
 
             if x >= x4:
-                entry_coords = (opp_x4, y4, midx, midy1, x - r, y - r / 2)
+                entry_coords = (x4, y4, midx, midy1, x - r, y - r / 2)
                 for text in entry_arrow_text:
                     event.widget.coords(text, midx, midy1)
             else:
