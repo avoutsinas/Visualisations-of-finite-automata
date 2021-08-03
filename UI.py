@@ -65,7 +65,7 @@ class App(Frame):
     def create_state(self, event):
         new_state = None
         final = None
-        font = tkFont.Font(family="calibri", size=12)
+        font = tkFont.Font(family="calibri", size=13)
 
         state_name = simpledialog.askstring(title="State Creation", prompt="Enter the name of the State",
                                             parent=event.widget)
@@ -92,16 +92,18 @@ class App(Frame):
             if not self.states:
                 event.widget.create_line(x - r, y, x - 2.2 * r, y, arrow=tk.FIRST, tags=(state_name, "arrow"),
                                          fill="white", width=1.45)
-                event.widget.create_oval(x - r, y - r, x + r, y + r, outline='black', fill='beige',
+                event.widget.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
                                          tags=(state_name, "circle", "first"), width=1.4)
-                event.widget.create_text(x, y, text=state_name, fill="black", tags=(state_name, "first", "label"),
+                event.widget.create_text(x, y, text=state_name, fill="white",
+                                         tags=(state_name, state_name + "label", "first", "label"),
                                          font=font)
             else:
-                event.widget.create_oval(x - r, y - r, x + r, y + r, outline='black', fill='beige',
+                event.widget.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
                                          tags=(state_name, "circle"), width=1.4)
-                event.widget.create_text(x, y, text=state_name, fill="black", tags=(state_name, "label"), font=font)
+                event.widget.create_text(x, y, text=state_name, fill="white",
+                                         tags=(state_name, state_name + "label", "label"), font=font)
             if final == 1:
-                event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='black', fill='',
+                event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
                                          tags=(state_name + "final", "circle"), width=1.4)
 
                 new_state = State(state_name, False, True)
@@ -121,36 +123,61 @@ class App(Frame):
         if len(self.transition_states) < 2:
             if self.transition_states == [] and name_tag in [i.get_name() for i in self.states]:
                 if "label" in tags:
-                    event.widget.addtag_withtag('start_point', tk.CURRENT)
-                    self.start_x = x
-                    self.start_y = y
+                    item = event.widget.find_withtag(name_tag + "label")
+                    self.start_x, self.start_y = event.widget.coords(item)
                     self.transition_states.append(name_tag)
-                    print("found starting point")
-                    print(tags)
-                    print(self.transition_states)
 
             elif len(self.transition_states) == 1 and name_tag in [i.get_name() for i in self.states]:
                 if name_tag != self.transition_states[0]:
-                    if "label" in tags or "circle" in tags:
-                        event.widget.addtag_withtag('end_point', tk.CURRENT)
-                        self.end_x = x
-                        self.end_y = y
+                    if "label" in tags:
+                        item = event.widget.find_withtag(name_tag + "label")
+                        self.end_x, self.end_y = event.widget.coords(item)
                         self.transition_states.append(name_tag)
-                        print("found end point")
-                        print(tags)
-                        print(self.transition_states)
 
-                        self.draw_arrow(event, r)
+                        self.draw_transition(event, r)
                         self.transition_states = []
                 elif name_tag == self.transition_states[0]:
-                    tag_to_add = ("from" + self.transition_states[0], "transition", "3")
-                    # event.widget.create_line()
+                    if "label" in tags:
+                        item = event.widget.find_withtag(name_tag + "label")
+                        self.end_x, self.end_y = event.widget.coords(item)
+                        self.start_x, self.start_y = self.end_x, self.end_y
+                        self.transition_states.append(name_tag)
+
+                        self.draw_self_transition(event, r)
+                        self.transition_states = []
             else:
                 self.transition_states = []
 
-    def draw_arrow(self, event, r):
-        if self.start_x < self.end_x:
-            tag_to_add = ("from" + self.transition_states[0], "to" + self.transition_states[1], "transition", "1")
+    def draw_self_transition(self, event, r):
+        tag_to_add = ("self" + self.transition_states[0], "self_transition")
+        tag_to_add_txt = (str((*tag_to_add, "text")), "text")
+
+        x1 = self.start_x - 0.9 * r
+        y1 = y2 = self.start_y - 0.5 * r
+        x2 = self.start_x + 0.9 * r
+
+        midx = (x1 + x2) / 2
+        midy = (y1 - 3 * r)
+
+        points = ((x1, y1), (midx, midy), (x2, y2))
+
+        transition_letters = simpledialog.askstring(title="Transition Creation",
+                                                    prompt="Specify the letter or letters that are used in this "
+                                                           "transition.\n\n Multiple letters should be seperated "
+                                                           "by commas.",
+                                                    parent=event.widget)
+        if transition_letters not in ["", None]:
+            event.widget.create_text(midx, midy + 15, text=transition_letters, fill="white", tags=tag_to_add_txt)
+
+            event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+        else:
+            self.transition_states = []
+
+    def draw_transition(self, event, r):
+        if self.start_x <= self.end_x:
+            tag_to_add = ("from_" + self.transition_states[0], "to_" + self.transition_states[1], "transition", "1")
+            tag_to_add_txt = (str((*tag_to_add, "text")), "text")
+            print(tag_to_add_txt)
 
             midx = (self.start_x + self.end_x) / 2
             midy = (self.start_y + self.end_y) / 2 - np.abs(self.start_x - self.end_x) / 6
@@ -164,16 +191,15 @@ class App(Frame):
                                                         parent=event.widget)
 
             if transition_letters not in ["", None]:
-                event.widget.create_text(midx, midy - 1, text=transition_letters, fill="white", tags=(
-                    transition_letters, "text", "text_from" + self.transition_states[0],
-                    "text_to" + self.transition_states[1], "1"))
+                event.widget.create_text(midx, midy - 1, text=transition_letters, fill="white", tags=tag_to_add_txt)
 
                 event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
             else:
                 self.transition_states = []
 
         elif self.start_x > self.end_x:
-            tag_to_add = ("from" + self.transition_states[0], "to" + self.transition_states[1], "transition", "2")
+            tag_to_add = ("from_" + self.transition_states[0], "to_" + self.transition_states[1], "transition", "2")
+            tag_to_add_txt = (str((*tag_to_add, "text")), "text")
 
             midx = (self.start_x + self.end_x) / 2
             midy = (self.start_y + self.end_y) / 2 + np.abs(self.start_x - self.end_x) / 6
@@ -187,9 +213,7 @@ class App(Frame):
                                                         parent=event.widget)
 
             if transition_letters not in ["", None]:
-                event.widget.create_text(midx, midy + 1, text=transition_letters, fill="white", tags=(
-                    transition_letters, "text", "text_from" + self.transition_states[0],
-                    "text_to" + self.transition_states[1], "2"))
+                event.widget.create_text(midx, midy + 1, text=transition_letters, fill="white", tags=tag_to_add_txt)
 
                 event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
             else:
@@ -208,8 +232,8 @@ class App(Frame):
             event.widget.addtag_withtag('selected_txt', tk.CURRENT)
             event.widget.addtag_closest('selected', x, y, halo=13, start=tk.CURRENT)
             event.widget.addtag_withtag("selected_final", name_tag + "final")
-            event.widget.addtag_withtag("selected_exit_transition", "from" + name_tag)
-            event.widget.addtag_withtag("selected_entry_transition", "to" + name_tag)
+            # event.widget.addtag_withtag("selected_exit_transition", "from_" + name_tag)
+            # event.widget.addtag_withtag("selected_entry_transition", "to_" + name_tag)
             # print(event.widget.gettags(tk.CURRENT))
 
             if "first" in event.widget.gettags(tk.CURRENT):
@@ -245,70 +269,66 @@ class App(Frame):
 
     @staticmethod
     def move_outbound_transitions(event, name_tag, x, y, r):
-        exit_arrows = event.widget.find_withtag("from" + name_tag)
-        exit_arrow_text = event.widget.find_withtag("text_from" + name_tag)
+        exit_arrows = event.widget.find_withtag("from_" + name_tag)
 
         for item in exit_arrows:
-            exiting = event.widget.coords(item)
+            item_tags = event.widget.gettags(item)
+            text_tag = str((*item_tags, "text"))
+            text = event.widget.find_withtag(text_tag)
 
+            exiting = event.widget.coords(item)
             x1, y1, x2, y2, x3, y3 = exiting
             midx = (x + x3) / 2
             midy1 = (y + y3) / 2 + np.abs(x - x3) / 6
             midy2 = (y + y3) / 2 - np.abs(x - x3) / 6
-            exit_coords = None
+            exit_coords, exit_coords_txt = None, None
 
             if "1" in event.widget.gettags(item):
                 if x >= x2:
                     exit_coords = (x - r, y + r / 2, midx, midy1, x3, y3)
-                    for text in exit_arrow_text:
-                        if "1" in event.widget.gettags(text):
-                            event.widget.coords(text, midx, midy1)
+                    exit_coords_txt = (midx, midy1)
                 else:
                     exit_coords = (x + r, y - r / 2, midx, midy2, x3, y3)
-                    for text in exit_arrow_text:
-                        if "1" in event.widget.gettags(text):
-                            event.widget.coords(text, midx, midy2)
+                    exit_coords_txt = (midx, midy2)
 
             elif "2" in event.widget.gettags(item):
                 if x >= x2:
                     exit_coords = (x - r, y + r / 2, midx, midy1, x3, y3)
-                    for text in exit_arrow_text:
-                        if "2" in event.widget.gettags(text):
-                            event.widget.coords(text, midx, midy1)
+                    exit_coords_txt = (midx, midy1)
                 else:
                     exit_coords = (x + r, y - r / 2, midx, midy2, x3, y3)
-                    for text in exit_arrow_text:
-                        if "2" in event.widget.gettags(text):
-                            event.widget.coords(text, midx, midy2)
+                    exit_coords_txt = (midx, midy2)
 
             event.widget.coords(item, *exit_coords)
+            event.widget.coords(text, *exit_coords_txt)
 
     @staticmethod
     def move_inbound_transitions(event, name_tag, x, y, r):
-        entry_arrows = event.widget.find_withtag("to" + name_tag)
+        entry_arrows = event.widget.find_withtag("to_" + name_tag)
         entry_arrow_text = event.widget.find_withtag("text_to" + name_tag)
 
         for item in entry_arrows:
-            moved = False
             entry = event.widget.coords(item)
+            item_tags = event.widget.gettags(item)
+            text_tag = str((*item_tags, "text"))
+            text = event.widget.find_withtag(text_tag)
 
             x4, y4, x5, y5, x6, y6 = entry
             midx = (x4 + x) / 2
             midy1 = (y + y4) / 2 - np.abs(x - x4) / 6
             midy2 = (y + y4) / 2 + np.abs(x - x4) / 6
-            entry_coords = None
+            entry_coords, entry_coords_txt = None, None
 
             if x >= x4:
                 entry_coords = (x4, y4, midx, midy1, x - r, y - r / 2)
-                for text in entry_arrow_text:
-                    event.widget.coords(text, midx, midy1)
+                entry_coords_txt = (midx, midy1)
             else:
                 entry_coords = (x4, y4, midx, midy2, x + r, y + r / 2)
-                for text in entry_arrow_text:
-                    event.widget.coords(text, midx, midy2)
+                entry_coords_txt = (midx, midy2)
 
             event.widget.coords(item, *entry_coords)
+            event.widget.coords(text, *entry_coords_txt)
 
     def clear_input(self, event):
-        event.widget.delete("circle", "arrow", "label", "transition", "text")
+        event.widget.delete("circle", "arrow", "label", "transition", "self_transition", "text")
         self.states = []
