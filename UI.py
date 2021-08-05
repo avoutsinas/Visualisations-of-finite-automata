@@ -384,7 +384,7 @@ class App(Frame):
             min.convert(self.fa)
 
     def clear_input(self, event):
-        event.widget.delete("circle", "arrow", "label", "transition", "self_transition", "text")
+        self.input_canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text")
         self.states = []
         self.transitions = []
         self.transition_states = []
