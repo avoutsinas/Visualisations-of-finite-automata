@@ -18,6 +18,13 @@ class App(Frame):
         self.width = 1400
         self.height = 850
 
+        self.selected = None
+        self.start_x, self.start_y, self.end_x, self.end_y = 0, 0, 0, 0
+        self.states = []
+        self.transitions = []
+        self.transition_states = []
+        self.fa = Dfa(name="GraphFA")
+
         self.image1 = Image.open("images//Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
         self.image2 = Image.open("images//Blackboard2.jpg").resize((self.width, self.height), Image.ANTIALIAS)
         self.bg1 = ImageTk.PhotoImage(self.image1)
@@ -50,13 +57,6 @@ class App(Frame):
 
         self.setup()
 
-        self.selected = None
-        self.start_x, self.start_y, self.end_x, self.end_y = 0, 0, 0, 0
-
-        self.states = []
-        self.transitions = []
-        self.transition_states = []
-
     def setup(self):
         self.winfo_toplevel().title("VoFA")
         label = Entry(self)
@@ -71,6 +71,8 @@ class App(Frame):
         self.input_canvas.bind('<Shift-1>', self.create_state)
         self.input_canvas.bind('<BackSpace>', self.clear_input)
         self.input_canvas.bind('<Control-1>', self.create_transition)
+        self.input_canvas.bind('r', self.create_automaton)
+        self.input_canvas.bind('t', self.minimize_dfa)
 
     def create_state(self, event):
         new_state = None
@@ -145,7 +147,6 @@ class App(Frame):
                         item = event.widget.find_withtag(name_tag + "label")
                         self.end_x, self.end_y = event.widget.coords(item)
                         self.transition_states.append(name_tag)
-
                         self.draw_transition(event, r)
                         self.transition_states = []
                 elif name_tag == self.transition_states[0]:
@@ -154,11 +155,8 @@ class App(Frame):
                         self.end_x, self.end_y = event.widget.coords(item)
                         self.start_x, self.start_y = self.end_x, self.end_y
                         self.transition_states.append(name_tag)
-
                         self.draw_self_transition(event, r)
                         self.transition_states = []
-            else:
-                self.transition_states = []
 
     def draw_self_transition(self, event, r):
         state = None
@@ -186,14 +184,7 @@ class App(Frame):
 
                 event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
                 event.widget.addtag_withtag("s_t", tk.CURRENT)
-                for s in self.states:
-                    if s.get_name() == state_name:
-                        state = s
-                        break
-                for letter in transition_letters:
-                    if letter not in [",", "", " "] and state is not None:
-                        self.transitions.append((state, letter, state))
-                        print(self.transitions)
+                self.record_transition(transition_letters, same=True)
 
     def draw_transition(self, event, r):
         existing_arrows = midx = y_txt = tag_to_add = tag_to_add_txt = points = None
@@ -226,6 +217,7 @@ class App(Frame):
             if transition_letters not in ["", None]:
                 event.widget.create_text(midx, y_txt, text=transition_letters, fill="white", tags=tag_to_add_txt)
                 event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+                self.record_transition(transition_letters, same=False)
 
     def select_state(self, event):
         x, y = event.x, event.y
@@ -346,6 +338,54 @@ class App(Frame):
             event.widget.coords(item, *entry_coords)
             event.widget.coords(text, *entry_coords_txt)
 
+    def record_transition(self, transition_letters, same):
+        if same:
+            state = None
+            state_name = self.transition_states[0]
+            for s in self.states:
+                if s.get_name() == state_name:
+                    state = s
+
+            for letter in transition_letters:
+                if letter not in [",", "", " "] and state is not None:
+                    self.transitions.append((state, letter, state))
+                    print(self.transitions)
+        else:
+            state1 = state2 = None
+            state_name1, state_name2 = self.transition_states[0], self.transition_states[1]
+
+            for s in self.states:
+                if state1 is not None and state2 is not None:
+                    break
+                else:
+                    if s.get_name() == state_name1:
+                        state1 = s
+                    elif s.get_name() == state_name2:
+                        state2 = s
+
+            for letter in transition_letters:
+                if letter not in [",", "", " "] and state1 is not None and state2 is not None:
+                    self.transitions.append((state1, letter, state2))
+                    print(self.transitions)
+
+    def create_automaton(self, event):
+        if self.states != []:
+            for s in self.states:
+                self.fa.add_state(s.get_name(), s.is_final)
+        if self.transitions != []:
+            for t in self.transitions:
+                self.fa.add_transition(*t)
+        print(self.fa)
+
+    def minimize_dfa(self, event):
+
+        if self.fa.Q != [] and self.fa.is_valid():
+            min = Minimise()
+            min.convert(self.fa)
+
     def clear_input(self, event):
         event.widget.delete("circle", "arrow", "label", "transition", "self_transition", "text")
         self.states = []
+        self.transitions = []
+        self.transition_states = []
+        self.fa.clear()

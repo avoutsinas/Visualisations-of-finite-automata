@@ -68,6 +68,15 @@ class Fa:
         if added and final:
             self.F.append(new_state)
 
+    def clear(self):
+        self.Q = []
+        self.d = []
+        self.s = []
+        self.F = []
+        self.sigma = []
+        self.table = []
+        self.table_length = 0
+
     # misc
 
     def print_Q(self):
