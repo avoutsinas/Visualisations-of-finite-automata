@@ -9,70 +9,18 @@ from FA import *
 from Algorithms import *
 
 
-class App(Frame):
-    radius = 20
+class InputBoard:
+    def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor):
 
-    def __init__(self):
-        super().__init__()
-        self.pack(expand=Y, fill=BOTH)
-        self.width = 1400
-        self.height = 850
-
-        self.selected = None
+        self.main = main
         self.start_x, self.start_y, self.end_x, self.end_y = 0, 0, 0, 0
+        self.canvas = tk.Canvas(main, width=width, height=height, bg=bg, highlightthickness=highlightthickness,
+                                highlightbackground=highlightbackground, highlightcolor=highlightcolor)
+
+        self.radius = self.main.radius
         self.states = []
         self.transitions = []
         self.transition_states = []
-        self.fa = Dfa(name="GraphFA")
-
-        self.image1 = Image.open("images//Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
-        self.image2 = Image.open("images//Blackboard2.jpg").resize((self.width, self.height), Image.ANTIALIAS)
-        self.bg1 = ImageTk.PhotoImage(self.image1)
-        self.bg2 = ImageTk.PhotoImage(self.image2)
-
-        self.main_canvas = Canvas(self, width=self.width, height=self.height, bg="gray")
-        # self.main_canvas.create_image(0,0,image=self.bg, anchor="nw")
-        self.main_canvas.pack(expand=Y, fill=BOTH)
-
-        self.input_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
-                                      bg='white', highlightthickness=5, highlightbackground="black",
-                                      highlightcolor="black")
-        self.input_canvas.create_image(0, 0, image=self.bg1, anchor="nw")
-        self.input_canvas.pack()
-
-        self.output_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
-                                       bg='white', highlightthickness=5, highlightbackground="black",
-                                       highlightcolor="black")
-        self.output_canvas.create_image(0, 0, image=self.bg2, anchor="nw")
-        self.output_canvas.pack()
-
-        self.input_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435, bg='white',
-                                      highlightthickness=5, highlightbackground="black", highlightcolor="black")
-        self.input_window.pack()
-
-        self.output_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
-                                       bg='white', highlightthickness=5, highlightbackground="black",
-                                       highlightcolor="black")
-        self.output_window.pack()
-
-        self.setup()
-
-    def setup(self):
-        self.winfo_toplevel().title("VoFA")
-        label = Entry(self)
-        # label.pack(side="top", fill="x")
-
-        self.main_canvas.create_window(380, 35, anchor=NW, window=self.input_canvas)
-        self.main_canvas.create_window(380, 420, anchor=NW, window=self.output_canvas)
-        self.main_canvas.create_window(25, 35, anchor=NW, window=self.input_window)
-        self.main_canvas.create_window(25, 420, anchor=NW, window=self.output_window)
-
-        self.input_canvas.bind('<1>', self.select_state)
-        self.input_canvas.bind('<Shift-1>', self.create_state)
-        self.input_canvas.bind('<BackSpace>', self.clear_input)
-        self.input_canvas.bind('<Control-1>', self.create_transition)
-        self.input_canvas.bind('r', self.create_automaton)
-        self.input_canvas.bind('t', self.minimize_dfa)
 
     def create_state(self, event):
         new_state = None
@@ -368,12 +316,75 @@ class App(Frame):
                     self.transitions.append((state1, letter, state2))
                     print(self.transitions)
 
+
+class App(Frame):
+    radius = 20
+
+    def __init__(self):
+        super().__init__()
+
+        self.width = 1400
+        self.height = 850
+
+        self.fa = Dfa(name="GraphFA")
+
+        self.pack(expand=Y, fill=BOTH)
+
+        self.image1 = Image.open("images//Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
+        self.image2 = Image.open("images//Blackboard2.jpg").resize((self.width, self.height), Image.ANTIALIAS)
+        self.bg1 = ImageTk.PhotoImage(self.image1)
+        self.bg2 = ImageTk.PhotoImage(self.image2)
+
+        self.main_canvas = Canvas(self, width=self.width, height=self.height, bg="gray")
+        # self.main_canvas.create_image(0,0,image=self.bg, anchor="nw")
+        self.main_canvas.pack(expand=Y, fill=BOTH)
+
+        self.input_board = InputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
+                                      bg='white', highlightthickness=5, highlightbackground="black",
+                                      highlightcolor="black")
+        self.input_board.canvas.create_image(0, 0, image=self.bg1, anchor="nw")
+        self.input_board.canvas.pack()
+
+        self.output_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
+                                       bg='white', highlightthickness=5, highlightbackground="black",
+                                       highlightcolor="black")
+        self.output_canvas.create_image(0, 0, image=self.bg2, anchor="nw")
+        self.output_canvas.pack()
+
+        self.input_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435, bg='white',
+                                      highlightthickness=5, highlightbackground="black", highlightcolor="black")
+        self.input_window.pack()
+
+        self.output_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
+                                       bg='white', highlightthickness=5, highlightbackground="black",
+                                       highlightcolor="black")
+        self.output_window.pack()
+
+        self.setup()
+
+    def setup(self):
+        self.winfo_toplevel().title("VoFA")
+        label = Entry(self)
+        # label.pack(side="top", fill="x")
+
+        self.main_canvas.create_window(380, 35, anchor=NW, window=self.input_board.canvas)
+        self.main_canvas.create_window(380, 420, anchor=NW, window=self.output_canvas)
+        self.main_canvas.create_window(25, 35, anchor=NW, window=self.input_window)
+        self.main_canvas.create_window(25, 420, anchor=NW, window=self.output_window)
+
+        self.input_board.canvas.bind('<1>', self.input_board.select_state)
+        self.input_board.canvas.bind('<Shift-1>', self.input_board.create_state)
+        self.input_board.canvas.bind('<BackSpace>', self.clear_input)
+        self.input_board.canvas.bind('<Control-1>', self.input_board.create_transition)
+        self.input_board.canvas.bind('r', self.create_automaton)
+        self.input_board.canvas.bind('t', self.minimize_dfa)
+
     def create_automaton(self, event):
-        if self.states != []:
-            for s in self.states:
+        if self.input_board.states != []:
+            for s in self.input_board.states:
                 self.fa.add_state(s.get_name(), s.is_final)
-        if self.transitions != []:
-            for t in self.transitions:
+        if self.input_board.transitions != []:
+            for t in self.input_board.transitions:
                 self.fa.add_transition(*t)
         print(self.fa)
 
@@ -384,8 +395,8 @@ class App(Frame):
             min.convert(self.fa)
 
     def clear_input(self, event):
-        self.input_canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text")
+        self.input_board.canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text")
         self.states = []
         self.transitions = []
-        self.transition_states = []
+        self.input_board.transition_states = []
         self.fa.clear()
