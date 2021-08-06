@@ -83,28 +83,28 @@ class InputBoard:
         print(name_tag)
 
         if len(self.transition_states) < 2:
-            if self.transition_states == [] and name_tag in [i.get_name() for i in self.states]:
+            if self.transition_states == [] and name_tag in [s.get_name() for s in self.states]:
                 if "label" in tags:
                     item = event.widget.find_withtag(name_tag + "label")
                     self.start_x, self.start_y = event.widget.coords(item)
                     self.transition_states.append(name_tag)
 
-            elif len(self.transition_states) == 1 and name_tag in [i.get_name() for i in self.states]:
-                if name_tag != self.transition_states[0]:
-                    if "label" in tags:
-                        item = event.widget.find_withtag(name_tag + "label")
-                        self.end_x, self.end_y = event.widget.coords(item)
-                        self.transition_states.append(name_tag)
-                        self.draw_transition(event, r)
-                        self.transition_states = []
-                elif name_tag == self.transition_states[0]:
-                    if "label" in tags:
-                        item = event.widget.find_withtag(name_tag + "label")
-                        self.end_x, self.end_y = event.widget.coords(item)
-                        self.start_x, self.start_y = self.end_x, self.end_y
-                        self.transition_states.append(name_tag)
-                        self.draw_self_transition(event, r)
-                        self.transition_states = []
+            elif len(self.transition_states) == 1 and name_tag in [s.get_name() for s in self.states]:
+                if name_tag != self.transition_states[0] and "label" in tags:
+                    item = event.widget.find_withtag(name_tag + "label")
+                    self.end_x, self.end_y = event.widget.coords(item)
+                    self.transition_states.append(name_tag)
+                    self.draw_transition(event, r)
+                    self.transition_states = []
+                elif name_tag == self.transition_states[0] and "label" in tags:
+                    item = event.widget.find_withtag(name_tag + "label")
+                    self.end_x, self.end_y = event.widget.coords(item)
+                    self.start_x, self.start_y = self.end_x, self.end_y
+                    self.transition_states.append(name_tag)
+                    self.draw_self_transition(event, r)
+                    self.transition_states = []
+            else:
+                self.transition_states = []
 
     def draw_self_transition(self, event, r):
         state = None
@@ -326,7 +326,7 @@ class App(Frame):
         self.width = 1400
         self.height = 850
 
-        self.fa = Dfa(name="GraphFA")
+        self.fa = Dfa(name="InputGraphFA")
 
         self.pack(expand=Y, fill=BOTH)
 
@@ -345,11 +345,11 @@ class App(Frame):
         self.input_board.canvas.create_image(0, 0, image=self.bg1, anchor="nw")
         self.input_board.canvas.pack()
 
-        self.output_canvas = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
-                                       bg='white', highlightthickness=5, highlightbackground="black",
-                                       highlightcolor="black")
-        self.output_canvas.create_image(0, 0, image=self.bg2, anchor="nw")
-        self.output_canvas.pack()
+        self.output_board = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
+                                      bg='white', highlightthickness=5, highlightbackground="black",
+                                      highlightcolor="black")
+        self.output_board.create_image(0, 0, image=self.bg2, anchor="nw")
+        self.output_board.pack()
 
         self.input_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435, bg='white',
                                       highlightthickness=5, highlightbackground="black", highlightcolor="black")
@@ -368,7 +368,7 @@ class App(Frame):
         # label.pack(side="top", fill="x")
 
         self.main_canvas.create_window(380, 35, anchor=NW, window=self.input_board.canvas)
-        self.main_canvas.create_window(380, 420, anchor=NW, window=self.output_canvas)
+        self.main_canvas.create_window(380, 420, anchor=NW, window=self.output_board)
         self.main_canvas.create_window(25, 35, anchor=NW, window=self.input_window)
         self.main_canvas.create_window(25, 420, anchor=NW, window=self.output_window)
 

@@ -168,19 +168,19 @@ class Dfa(Fa):
     def is_valid(self):
         valid = True
 
-        if self.s == [] or self.F == []:
+        if self.Q == [] or self.d == []:
             valid = False
             return valid
+        else:
+            for s in self.Q:
+                transition_letters = []
+                for t in self.d:
+                    if t.get_start_name() == s.get_name():
+                        transition_letters.append(t.letter)
 
-        for s in self.Q:
-            transition_letters = []
-            for t in self.d:
-                if t.get_start_name() == s.get_name():
-                    transition_letters.append(t.letter)
-
-            if sorted(transition_letters) != sorted(self.sigma):
-                valid = False
-                return valid
+                if sorted(transition_letters) != sorted(self.sigma):
+                    valid = False
+                    return valid
 
         return valid
 
