@@ -3,10 +3,41 @@ import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import *
 from tkinter import simpledialog
+from tkinter import ttk
 from PIL import Image, ImageTk
 from Preliminaries import *
 from FA import *
 from Algorithms import *
+
+
+class Window:
+    def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor):
+        self.container = tk.Frame(main, width=width, height=height)
+        self.canvas = tk.Canvas(self.container, width=width, height=height, bg=bg,
+                                highlightthickness=highlightthickness,
+                                highlightbackground=highlightbackground, highlightcolor=highlightcolor,
+                                scrollregion=(0, 0, 1000, 1000))
+
+        self.y_scrollbar = tk.Scrollbar(self.container, orient="vertical", command=self.canvas.yview, jump=1,
+                                        width=12, troughcolor="black")
+        self.scrollable_y_frame = tk.Frame(self.canvas)
+        self.canvas.create_window((0, 0), window=self.scrollable_y_frame, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.y_scrollbar.set)
+        self.y_scrollbar.pack(side="right", fill="y")
+
+        self.x_scrollbar = tk.Scrollbar(self.container, orient="horizontal", command=self.canvas.xview, jump=1,
+                                        width=12, troughcolor="black")
+        self.scrollable_x_frame = tk.Frame(self.canvas)
+        self.canvas.create_window((0, 0), window=self.scrollable_x_frame, anchor="nw")
+        self.canvas.configure(xscrollcommand=self.x_scrollbar.set)
+        self.x_scrollbar.pack(side="bottom", fill="x")
+
+        self.width = width
+        self.height = height
+        self.font = tkFont.Font(family="consolas", size=14)
+
+    def show_pos(self, event):
+        print(event.x, event.y)
 
 
 class InputBoard:
@@ -317,6 +348,26 @@ class InputBoard:
                     print(self.transitions)
 
 
+class OutputWindow(Window):
+    def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor):
+        super().__init__(main, width, height, bg, highlightthickness, highlightbackground, highlightcolor)
+
+        self.starting_string = "\nTransition table" + "\n\n" + "    |  " + "\u03B4" + "   "
+        self.table_to_print = self.starting_string
+        self.canvas.create_text(width / 50, height / 50, text=self.table_to_print, fill="black",
+                                tags="output_table", font=self.font, anchor=NW)
+
+    def update_output(self, string):
+        self.table_to_print = string
+        self.canvas.delete("output_table")
+        self.canvas.create_text(self.width / 100, self.height / 100, text=self.table_to_print, fill="black",
+                                tags="output_table", font=self.font, anchor=NW)
+
+    def reset_output(self):
+        reset_string = self.starting_string
+        self.update_output(reset_string)
+
+
 class App(Frame):
     radius = 20
 
@@ -355,10 +406,10 @@ class App(Frame):
                                       highlightthickness=5, highlightbackground="black", highlightcolor="black")
         self.input_window.pack()
 
-        self.output_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
-                                       bg='white', highlightthickness=5, highlightbackground="black",
-                                       highlightcolor="black")
-        self.output_window.pack()
+        self.output_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
+                                          bg='white', highlightthickness=5, highlightbackground="black",
+                                          highlightcolor="black")
+        self.output_window.canvas.pack()
 
         self.setup()
 
@@ -367,10 +418,10 @@ class App(Frame):
         label = Entry(self)
         # label.pack(side="top", fill="x")
 
-        self.main_canvas.create_window(380, 35, anchor=NW, window=self.input_board.canvas)
-        self.main_canvas.create_window(380, 420, anchor=NW, window=self.output_board)
-        self.main_canvas.create_window(25, 35, anchor=NW, window=self.input_window)
-        self.main_canvas.create_window(25, 420, anchor=NW, window=self.output_window)
+        self.main_canvas.create_window(389, 35, anchor=NW, window=self.input_board.canvas)
+        self.main_canvas.create_window(389, 420, anchor=NW, window=self.output_board)
+        self.main_canvas.create_window(17, 35, anchor=NW, window=self.input_window)
+        self.main_canvas.create_window(17, 420, anchor=NW, window=self.output_window.container)
 
         self.input_board.canvas.bind('<1>', self.input_board.select_state)
         self.input_board.canvas.bind('<Shift-1>', self.input_board.create_state)
@@ -378,8 +429,11 @@ class App(Frame):
         self.input_board.canvas.bind('<Control-1>', self.input_board.create_transition)
         self.input_board.canvas.bind('r', self.create_automaton)
         self.input_board.canvas.bind('t', self.minimize_dfa)
+        self.output_window.canvas.bind('<1>', self.output_window.show_pos)
 
     def create_automaton(self, event):
+        if self.fa.Q != []:
+            self.fa.clear()
         if self.input_board.states != []:
             for s in self.input_board.states:
                 self.fa.add_state(s.get_name(), s.is_final)
@@ -392,11 +446,14 @@ class App(Frame):
 
         if self.fa.Q != [] and self.fa.is_valid():
             min = Minimise()
-            min.convert(self.fa)
+            minimised_fa = min.convert(self.fa)
+            self.output_window.update_output(str(minimised_fa))
+            print(minimised_fa)
 
     def clear_input(self, event):
         self.input_board.canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text")
-        self.states = []
-        self.transitions = []
+        self.input_board.states = []
+        self.input_board.transitions = []
         self.input_board.transition_states = []
         self.fa.clear()
+        self.output_window.reset_output()
