@@ -300,6 +300,7 @@ class Minimise(object):
         if max(num_partitions) > 1:
             new_Q = []
             new_d = []
+            new_state = None
 
             for p_set in partitions:
                 new_state_name = ""
@@ -316,7 +317,7 @@ class Minimise(object):
                         elif s.get_name() not in new_state_name:
                             new_state_name += "," + s.get_name()
                     new_state = State(new_state_name, start, final)
-                else:
+                elif len(p_set) == 1:
                     new_state = p_set[0]
 
                 if new_state not in new_Q:

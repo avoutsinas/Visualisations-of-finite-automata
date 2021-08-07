@@ -218,7 +218,7 @@ class InputBoard(Board):
                 new_state = State(state_name, starting, False)
 
         if state_name not in ["", None] and final is not None:
-            self.states.append(new_state)
+            self.record_state(new_state)
         print(self.states)
 
     def create_transition(self, event):
@@ -312,6 +312,10 @@ class InputBoard(Board):
                 event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
                 self.record_transition(transition_letters, same=False)
 
+    def record_state(self, new_state):
+        self.states.append(new_state)
+        self.update_input_window()
+
     def record_transition(self, transition_letters, same):
         if same:
             state = None
@@ -341,6 +345,11 @@ class InputBoard(Board):
                 if letter not in [",", "", " "] and state1 is not None and state2 is not None:
                     self.transitions.append((state1, letter, state2))
                     print(self.transitions)
+        self.update_input_window()
+
+    def update_input_window(self):
+        fa = self.main.create_automaton()
+        self.main.input_window.update_output(str(fa))
 
 
 class Window:
@@ -377,7 +386,7 @@ class OutputWindow(Window):
     def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor):
         super().__init__(main, width, height, bg, highlightthickness, highlightbackground, highlightcolor)
 
-        self.starting_string = "\nTransition table" + "\n\n" + "    |  " + "\u03B4" + "   "
+        self.starting_string = "\nTransition table" + "\n\n" + "    |  " + delta + "   "
         self.table_to_print = self.starting_string
         self.canvas.create_text(width / 50, height / 50, text=self.table_to_print, fill="black",
                                 tags="output_table", font=self.font, anchor=NW)
@@ -428,9 +437,10 @@ class App(Frame):
         self.output_board.create_image(0, 0, image=self.bg2, anchor="nw")
         self.output_board.pack()
 
-        self.input_window = tk.Canvas(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435, bg='white',
-                                      highlightthickness=5, highlightbackground="black", highlightcolor="black")
-        self.input_window.pack()
+        self.input_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
+                                         bg='white', highlightthickness=5, highlightbackground="black",
+                                         highlightcolor="black")
+        self.input_window.canvas.pack()
 
         self.output_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
                                           bg='white', highlightthickness=5, highlightbackground="black",
@@ -444,10 +454,10 @@ class App(Frame):
         label = Entry(self)
         # label.pack(side="top", fill="x")
 
-        self.main_canvas.create_window(389, 35, anchor=NW, window=self.input_board.container)
-        self.main_canvas.create_window(389, 420, anchor=NW, window=self.output_board)
-        self.main_canvas.create_window(17, 35, anchor=NW, window=self.input_window)
-        self.main_canvas.create_window(17, 420, anchor=NW, window=self.output_window.container)
+        self.main_canvas.create_window(389, 31, anchor=NW, window=self.input_board.container)
+        self.main_canvas.create_window(389, 424, anchor=NW, window=self.output_board)
+        self.main_canvas.create_window(17, 31, anchor=NW, window=self.input_window.container)
+        self.main_canvas.create_window(17, 424, anchor=NW, window=self.output_window.container)
 
         self.input_board.canvas.bind('<1>', self.input_board.select_state)
         self.input_board.canvas.bind('<Shift-1>', self.input_board.create_state)
@@ -457,7 +467,7 @@ class App(Frame):
         self.input_board.canvas.bind('t', self.minimize_dfa)
         self.output_window.canvas.bind('<1>', self.output_window.show_pos)
 
-    def create_automaton(self, event):
+    def create_automaton(self):
         if self.fa.Q != []:
             self.fa.clear()
         if self.input_board.states != []:
@@ -467,6 +477,7 @@ class App(Frame):
             for t in self.input_board.transitions:
                 self.fa.add_transition(*t)
         print(self.fa)
+        return self.fa
 
     def minimize_dfa(self, event):
 
@@ -482,4 +493,5 @@ class App(Frame):
         self.input_board.transitions = []
         self.input_board.transition_states = []
         self.fa.clear()
+        self.input_window.reset_output()
         self.output_window.reset_output()
