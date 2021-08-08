@@ -1,9 +1,8 @@
 import numpy as np
 import tkinter as tk
-import tkinter.font as tkFont
 from tkinter import *
+import tkinter.font as tkFont
 from tkinter import simpledialog
-from tkinter import ttk
 from PIL import Image, ImageTk
 from Preliminaries import *
 from FA import *
@@ -112,7 +111,7 @@ class Board:
             midy2 = (y + y3) / 2 - np.abs(x - x3) / 6
             exit_coords, exit_coords_txt = None, None
 
-            if "1" in event.widget.gettags(item):
+            if "type1" in event.widget.gettags(item):
                 if x >= x2:
                     exit_coords = (x - r, y + r / 2, midx1, midy1, x3, y3)
                     exit_coords_txt = (midx1, midy1)
@@ -120,7 +119,7 @@ class Board:
                     exit_coords = (x + r, y - r / 2, midx2, midy2, x3, y3)
                     exit_coords_txt = (midx2, midy2)
 
-            elif "2" in event.widget.gettags(item):
+            elif "type2" in event.widget.gettags(item):
                 if x >= x2:
                     exit_coords = (x - r, y + r / 2, midx1, midy1, x3, y3)
                     exit_coords_txt = (midx1, midy1)
@@ -168,6 +167,7 @@ class InputBoard(Board):
         self.states = []
         self.transitions = []
         self.transition_states = []
+        self.memory = []
 
     def create_state(self, event):
         new_state = None
@@ -212,7 +212,7 @@ class InputBoard(Board):
                                          tags=(state_name, state_name + "label", "label"), font=self.font)
             if final == 1:
                 event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
-                                         tags=(state_name + "final", "circle"), width=1.4)
+                                         tags=(state_name, state_name + "final", "circle"), width=1.4)
 
                 new_state = State(state_name, starting, True)
             else:
@@ -253,10 +253,10 @@ class InputBoard(Board):
                 self.transition_states = []
 
     def draw_self_transition(self, event, r):
-        state = None
         state_name = self.transition_states[0]
         tag_to_add = ("self" + state_name, "self_transition")
         tag_to_add_txt = ("self" + state_name + "text", "text")
+        existing_arrows = event.widget.find_withtag("self" + state_name + "text")
 
         x1 = self.start_x - 0.9 * r
         y1 = y2 = self.start_y - 0.5 * r
@@ -267,28 +267,27 @@ class InputBoard(Board):
 
         points = ((x1, y1), (midx, midy), (x2, y2))
 
-        if "s_t" not in event.widget.gettags(tk.CURRENT):
+        if existing_arrows == ():
             transition_letters = simpledialog.askstring(title="Transition Creation",
                                                         prompt="Specify the letter or letters that are used in this "
                                                                "transition.\n\n Multiple letters should be seperated "
                                                                "by commas.",
                                                         parent=event.widget)
             if transition_letters not in ["", None]:
-                event.widget.create_text(midx, midy + 15, text=transition_letters, fill="white", tags=tag_to_add_txt,
-                                         font=self.font_small)
+                o1 = event.widget.create_text(midx, midy + 15, text=transition_letters, fill="white",
+                                              tags=tag_to_add_txt,
+                                              font=self.font_small)
 
-                event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
-                event.widget.addtag_withtag("s_t", tk.CURRENT)
-                self.record_transition(transition_letters, same=True)
+                o2 = event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+                self.record_transition(transition_letters, o1, o2, same=True)
 
     def draw_transition(self, event, r):
-        existing_arrows = midx = y_txt = tag_to_add = tag_to_add_txt = points = None
+        existing_arrows = midx = y_txt = points = None
         input_prompt = "Specify the letter or letters that are used in this transition.\n\n " \
                        "Multiple letters should be seperated by commas."
-
+        tag_to_add = ["from_" + self.transition_states[0], "to_" + self.transition_states[1], "transition"]
         if self.start_x <= self.end_x:
-            tag_to_add = ("from_" + self.transition_states[0], "to_" + self.transition_states[1], "transition", "1")
-            tag_to_add_txt = (str((*tag_to_add, "text")), "text")
+            tag_to_add.append("type1")
             existing_arrows = event.widget.find_withtag(str((*tag_to_add, "text")))
 
             midx = (self.start_x + self.end_x) / 2
@@ -297,8 +296,7 @@ class InputBoard(Board):
             points = ((self.start_x + r, self.start_y - r / 2), (midx, midy), (self.end_x - r, self.end_y - r / 2))
 
         elif self.start_x > self.end_x:
-            tag_to_add = ("from_" + self.transition_states[0], "to_" + self.transition_states[1], "transition", "2")
-            tag_to_add_txt = (str((*tag_to_add, "text")), "text")
+            tag_to_add.append("type2")
             existing_arrows = event.widget.find_withtag(str((*tag_to_add, "text")))
 
             midx = (self.start_x + self.end_x) / 2
@@ -306,22 +304,26 @@ class InputBoard(Board):
             y_txt = midy + 1
             points = ((self.start_x - r, self.start_y + r / 2), (midx, midy), (self.end_x + r, self.end_y + r / 2))
 
+        tag_to_add_txt = (str((*tag_to_add, "text")), "text")
+
         if existing_arrows == ():
             transition_letters = simpledialog.askstring(title="Transition Creation", prompt=input_prompt,
                                                         parent=event.widget)
             transition_letters = self.find_empty_word(transition_letters)
 
             if transition_letters not in ["", None]:
-                event.widget.create_text(midx, y_txt, text=transition_letters, fill="white", tags=tag_to_add_txt,
-                                         font=self.font_small)
-                event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
-                self.record_transition(transition_letters, same=False)
+                o1 = event.widget.create_text(midx, y_txt, text=transition_letters, fill="white", tags=tag_to_add_txt,
+                                              font=self.font_small)
+                o2 = event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+                self.record_transition(transition_letters, o1, o2, same=False)
 
     def record_state(self, new_state):
         self.states.append(new_state)
         self.update_input_window()
+        self.memory.append([new_state])
 
-    def record_transition(self, transition_letters, same):
+    def record_transition(self, transition_letters, obj1, obj2, same):
+        self.memory.append([obj1, obj2])
         if same:
             state = None
             state_name = self.transition_states[0]
@@ -331,8 +333,9 @@ class InputBoard(Board):
 
             for letter in transition_letters:
                 if letter not in [",", ".", "", " "] and state is not None:
-                    self.transitions.append((state, letter, state))
-                    print(self.transitions)
+                    to_add = (state, letter, state)
+                    self.transitions.append(to_add)
+                    self.memory[-1].append(to_add)
         else:
             state1 = state2 = None
             state_name1, state_name2 = self.transition_states[0], self.transition_states[1]
@@ -348,13 +351,32 @@ class InputBoard(Board):
 
             for letter in transition_letters:
                 if letter not in [",", "", " "] and state1 is not None and state2 is not None:
-                    self.transitions.append((state1, letter, state2))
-                    print(self.transitions)
+                    to_add = (state1, letter, state2)
+                    self.transitions.append(to_add)
+                    self.memory[-1].append(to_add)
+
+        print(self.transitions)
         self.update_input_window()
 
     def update_input_window(self):
         fa = self.main.create_automaton()
         self.main.input_window.update_output(str(fa))
+
+    def undo(self, event):
+        if self.memory != []:
+            current = self.memory.pop()
+            if type(current[0]) is not int:
+                state_to_remove = current[0]
+                self.states.remove(state_to_remove)
+                self.canvas.delete(state_to_remove.get_name())
+            elif type(current[0]) is int:
+                self.canvas.delete(current[0])
+                self.canvas.delete(current[1])
+                for i in range(2, len(current)):
+                    transition_to_remove = current[i]
+                    self.transitions.remove(transition_to_remove)
+
+        self.update_input_window()
 
     @staticmethod
     def find_empty_word(txt):
@@ -443,13 +465,13 @@ class App(Frame):
         self.input_board = InputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
                                       bg='white', highlightthickness=5, highlightbackground="black",
                                       highlightcolor="black")
-        self.input_board.canvas.create_image(0, 0, image=self.bg1, anchor="nw")
+        self.input_board.canvas.create_image(0, 0, image=self.bg1, anchor="nw", tag="background")
         self.input_board.canvas.pack()
 
         self.output_board = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
                                       bg='white', highlightthickness=5, highlightbackground="black",
                                       highlightcolor="black")
-        self.output_board.create_image(0, 0, image=self.bg2, anchor="nw")
+        self.output_board.create_image(0, 0, image=self.bg2, anchor="nw", tag="background")
         self.output_board.pack()
 
         self.input_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
@@ -476,11 +498,11 @@ class App(Frame):
 
         self.input_board.canvas.bind('<1>', self.input_board.select_state)
         self.input_board.canvas.bind('<Shift-1>', self.input_board.create_state)
-        self.input_board.canvas.bind('<BackSpace>', self.clear_input)
         self.input_board.canvas.bind('<Control-1>', self.input_board.create_transition)
+        self.input_board.canvas.bind('<BackSpace>', self.clear_input)
         self.input_board.canvas.bind('r', self.create_automaton)
         self.input_board.canvas.bind('t', self.minimize_dfa)
-        self.output_window.canvas.bind('<1>', self.output_window.show_pos)
+        self.input_board.canvas.bind('<Control-z>', self.input_board.undo)
 
     def create_automaton(self):
         if self.fa.Q != []:
@@ -491,7 +513,6 @@ class App(Frame):
         if self.input_board.transitions != []:
             for t in self.input_board.transitions:
                 self.fa.add_transition(*t)
-        print(self.fa)
         return self.fa
 
     def minimize_dfa(self, event):
