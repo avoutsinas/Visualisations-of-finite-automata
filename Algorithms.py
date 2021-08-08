@@ -32,7 +32,7 @@ class Determinise(object):
 
         for s in q:
             for t in d:
-                flag_lst = [t.get_start_name(), "{}"]
+                flag_lst = [t.get_start_name(), void]
                 if t.get_start_name() in s.get_name() and t.letter == epsilon and t.get_end_name() not in flag_lst:
                     empty_d.append(t)
                     temp = t.get_start_state()
@@ -110,7 +110,7 @@ class Determinise(object):
 
                 if end_s.is_final:
                     final = True
-                if end_s.get_name() != "{}":
+                if end_s.get_name() != void:
                     if new_state_name == "":
                         new_state_name += end_s.get_name()
                     elif end_s.get_name() not in new_state_name:
@@ -209,7 +209,7 @@ class Minimise(object):
                                  t.get_start_state() == q and t.letter == l and t.get_end_state() not in temp]
                     elif fa_type == "nfa":
                         temp += [i for t in input_fa.get_d() if t.get_start_state() == q and t.letter == l \
-                                 for i in t.get_end_states() if i.get_name() != "{}" and i not in temp]
+                                 for i in t.get_end_states() if i.get_name() != void and i not in temp]
 
             new_states = [i for i in temp if i not in reachable_states]
             reachable_states += new_states

@@ -2,9 +2,7 @@ import numpy as np
 import abc
 from Preliminaries import *
 
-empty_end_state = State("{}")
-delta = "\u03B4"
-Delta = "\u0394"
+empty_end_state = State(void)
 
 
 class Fa:
@@ -140,7 +138,7 @@ class Fa:
 
                 for letter in remaining:
                     self.add_transition(s, letter, empty_end_state)
-                    # print(DfaTransition(s, letter, State("{}")))
+                    # print(DfaTransition(s, letter, State(void)))
         return self.d
 
     def find_table_size(self):
@@ -176,7 +174,7 @@ class Dfa(Fa):
     def add_transition(self, q1, letter, q2):
         letter_str = str(letter)
 
-        if q1 in self.Q and (q2 in self.Q or q2.get_name() == "{}"):
+        if q1 in self.Q and (q2 in self.Q or q2.get_name() == void):
             transition_to_add = DfaTransition(q1, letter_str, q2)
             self.d.append(transition_to_add)
 
@@ -191,8 +189,9 @@ class Dfa(Fa):
 
     def is_valid(self):
         valid = True
+        end_states = [i.get_end_state() for i in self.d]
 
-        if self.Q == [] or self.d == [] or empty_end_state in [i.get_end_state() for i in self.d]:
+        if self.Q == [] or self.d == [] or empty_end_state in end_states or epsilon in self.sigma:
             valid = False
             return valid
         else:
@@ -236,14 +235,14 @@ class Nfa(Fa):
         letter_str = str(letter)
         flag = False
 
-        if q1 in self.Q and (q2 in self.Q or q2.get_name() == "{}"):
+        if q1 in self.Q and (q2 in self.Q or q2.get_name() == void):
             transition_to_add = NfaTransition(q1, letter_str, [q2])
             if self.d != []:
                 for t in self.d:
                     if t.get_start_name() == q1.get_name() and t.letter == letter_str and \
                             t.get_end_name() != q2.get_name() and flag == False:
 
-                        if "{}" in t.get_end_name():
+                        if void in t.get_end_name():
                             flag = True
                             t.change_end_state(q2)
                         else:

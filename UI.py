@@ -34,6 +34,8 @@ class Board:
         self.canvas.configure(xscrollcommand=self.x_scrollbar.set)
         self.x_scrollbar.pack(side="bottom", fill="x")
         """
+        self.font = tkFont.Font(family="consolas", size=13)
+        self.font_small = tkFont.Font(family="consolas", size=10)
 
     def select_state(self, event):
         x, y = event.x, event.y
@@ -171,7 +173,6 @@ class InputBoard(Board):
         new_state = None
         starting = False
         final = None
-        font = tkFont.Font(family="calibri", size=13)
 
         state_name = simpledialog.askstring(title="State Creation", prompt="Enter the name of the State",
                                             parent=event.widget)
@@ -203,12 +204,12 @@ class InputBoard(Board):
                                          tags=(state_name, "circle", "first"), width=1.4)
                 event.widget.create_text(x, y, text=state_name, fill="white",
                                          tags=(state_name, state_name + "label", "first", "label"),
-                                         font=font)
+                                         font=self.font)
             else:
                 event.widget.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
                                          tags=(state_name, "circle"), width=1.4)
                 event.widget.create_text(x, y, text=state_name, fill="white",
-                                         tags=(state_name, state_name + "label", "label"), font=font)
+                                         tags=(state_name, state_name + "label", "label"), font=self.font)
             if final == 1:
                 event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
                                          tags=(state_name + "final", "circle"), width=1.4)
@@ -273,7 +274,8 @@ class InputBoard(Board):
                                                                "by commas.",
                                                         parent=event.widget)
             if transition_letters not in ["", None]:
-                event.widget.create_text(midx, midy + 15, text=transition_letters, fill="white", tags=tag_to_add_txt)
+                event.widget.create_text(midx, midy + 15, text=transition_letters, fill="white", tags=tag_to_add_txt,
+                                         font=self.font_small)
 
                 event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
                 event.widget.addtag_withtag("s_t", tk.CURRENT)
@@ -307,8 +309,11 @@ class InputBoard(Board):
         if existing_arrows == ():
             transition_letters = simpledialog.askstring(title="Transition Creation", prompt=input_prompt,
                                                         parent=event.widget)
+            transition_letters = self.find_empty_word(transition_letters)
+
             if transition_letters not in ["", None]:
-                event.widget.create_text(midx, y_txt, text=transition_letters, fill="white", tags=tag_to_add_txt)
+                event.widget.create_text(midx, y_txt, text=transition_letters, fill="white", tags=tag_to_add_txt,
+                                         font=self.font_small)
                 event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
                 self.record_transition(transition_letters, same=False)
 
@@ -325,7 +330,7 @@ class InputBoard(Board):
                     state = s
 
             for letter in transition_letters:
-                if letter not in [",", "", " "] and state is not None:
+                if letter not in [",", ".", "", " "] and state is not None:
                     self.transitions.append((state, letter, state))
                     print(self.transitions)
         else:
@@ -351,6 +356,11 @@ class InputBoard(Board):
         fa = self.main.create_automaton()
         self.main.input_window.update_output(str(fa))
 
+    @staticmethod
+    def find_empty_word(txt):
+        to_return = txt.replace("$", epsilon)
+        return to_return
+
 
 class Window:
     def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor):
@@ -358,7 +368,7 @@ class Window:
         self.canvas = tk.Canvas(self.container, width=width, height=height, bg=bg,
                                 highlightthickness=highlightthickness,
                                 highlightbackground=highlightbackground, highlightcolor=highlightcolor,
-                                scrollregion=(0, 0, 0, 0))
+                                scrollregion=(0, 0, width, height))
 
         self.y_scrollbar = tk.Scrollbar(self.container, orient="vertical", command=self.canvas.yview, jump=1,
                                         width=12, troughcolor="black")
@@ -374,9 +384,14 @@ class Window:
         self.canvas.configure(xscrollcommand=self.x_scrollbar.set)
         self.x_scrollbar.pack(side="bottom", fill="x")
 
+        self.canvas.bind("<MouseWheel>", self._on_mousewheel)
+
         self.width = width
         self.height = height
         self.font = tkFont.Font(family="consolas", size=14)
+
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(-1 * (event.delta // 120), "units")
 
     def show_pos(self, event):
         print(event.x, event.y)

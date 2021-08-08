@@ -1,6 +1,9 @@
 import numpy as np
 
 epsilon = '\u03B5'
+void = "\u00D8"
+delta = "\u03B4"
+Delta = "\u0394"
 
 
 class State:
