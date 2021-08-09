@@ -8,6 +8,18 @@ from Preliminaries import *
 from FA import *
 from Algorithms import *
 
+tutorial_txt1 = "                  Welcome!" \
+                "\n\n You can begin constructing an automaton!" \
+                "\n\n                  Keybinds:" \
+                "\n\n State Creation: Shift-LMB" \
+                "\n\n Transition Creation: Hold Control-LMB" \
+                "\n (Click two states by holding down Control)" \
+                "\n\n Undo Action: Control-Z " \
+                "\n\n               Functionality:" \
+                "\n\n Depending on your selected options you can: " \
+                "\n\n a) Convert a NFA to its equivalent DFA" \
+                "\n\n b) Convert a DFA to its minimal form"
+
 
 class Board:
     def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor):
@@ -569,14 +581,15 @@ class Window:
                                         width=12, troughcolor="black")
         self.scrollable_x_frame = tk.Frame(self.canvas)
         self.canvas.create_window((0, 0), window=self.scrollable_x_frame, anchor="nw")
-        self.canvas.configure(xscrollcommand=self.x_scrollbar.set)
         self.x_scrollbar.pack(side="bottom", fill="x")
 
         self.canvas.bind("<MouseWheel>", self._on_mousewheel)
+        self.canvas.configure(scrollregion=self.canvas.bbox('all'))
 
         self.width = width
         self.height = height
         self.font = tkFont.Font(family="consolas", size=14)
+        self.font_small = tkFont.Font(family="consolas", size=11)
 
     def _on_mousewheel(self, event):
         self.canvas.yview_scroll(-1 * (event.delta // 120), "units")
@@ -586,25 +599,37 @@ class Window:
 
 
 class OutputWindow(Window):
-    def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor, offset=50):
+    def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor, offset=50,
+                 txt=""):
         super().__init__(main, width, height, bg, highlightthickness, highlightbackground, highlightcolor)
 
         self.offset = offset
-        self.starting_string = "\nTransition table" + "\n\n" + "    |  " + delta + "   "
+        self.starting_string = txt
         self.table_to_print = self.starting_string
-        self.canvas.create_text(width / 50, height / offset, text=self.table_to_print, fill="white",
-                                tags="output_table", font=self.font, anchor=NW)
 
-    def update_output(self, string):
+    def update_output(self, string, small=False):
+        if small:
+            font = self.font_small
+            height = (self.height / self.offset) + 15
+        else:
+            font = self.font
+            height = (self.height / self.offset)
+
         self.table_to_print = string
         self.canvas.delete("output_table")
-        self.canvas.create_text(self.width / 100, self.height / self.offset, text=self.table_to_print, fill="white",
-                                tags="output_table", font=self.font, anchor=NW)
+        self.canvas.create_text(self.width / 100, height, text=self.table_to_print, fill="white",
+                                tags="output_table", font=font, anchor=NW)
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+
+    def configure_txt(self, txt):
+        self.starting_string = txt
 
     def reset_output(self):
         reset_string = self.starting_string
-        self.update_output(reset_string)
+        if self.starting_string == tutorial_txt1:
+            self.update_output(reset_string, True)
+        else:
+            self.update_output(reset_string, False)
 
 
 class App(Frame):
@@ -648,19 +673,18 @@ class App(Frame):
 
         self.input_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
                                          bg='white', highlightthickness=5, highlightbackground="black",
-                                         highlightcolor="black", offset=7)
+                                         highlightcolor="black", offset=7, txt=str(self.fa))
         self.input_window.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
         self.input_window.canvas.pack()
 
         self.output_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
                                           bg='white', highlightthickness=5, highlightbackground="black",
-                                          highlightcolor="black")
+                                          highlightcolor="black", txt=tutorial_txt1)
         self.output_window.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
         self.output_window.canvas.pack()
 
         self.clear_button = tk.Button(self, text="CLEAR", anchor="center", command=lambda: self.clear_input())
         self.clear_button.configure(width=20, height=1, activebackground="gray", relief=FLAT)
-        self.main_canvas.create_window(self.width / 2, self.height / 1.045, anchor=NW, window=self.clear_button)
 
         self.dfa_button = tk.Button(self, text="DFA", anchor="center", bg="gray",
                                     command=lambda: self.dfa_button_press())
@@ -686,6 +710,7 @@ class App(Frame):
         self.main_canvas.create_window(389, 424, anchor=NW, window=self.output_board.container)
         self.main_canvas.create_window(17, 31, anchor=NW, window=self.input_window.container)
         self.main_canvas.create_window(17, 424, anchor=NW, window=self.output_window.container)
+        self.main_canvas.create_window(self.width / 2, self.height / 1.035, anchor=NW, window=self.clear_button)
         self.main_canvas.create_window(22, 36, anchor=NW, window=self.nfa_button)
         self.main_canvas.create_window(194.3, 36, anchor=NW, window=self.dfa_button)
         self.main_canvas.create_window(22, 63, anchor=NW, window=self.convert_button)
@@ -699,6 +724,8 @@ class App(Frame):
         self.input_board.canvas.bind('<Control-z>', self.input_board.undo)
 
         self.output_board.canvas.bind('<1>', self.input_board.select_state)
+
+        self.clear_input()
 
     def create_automaton(self):
         if self.fa.Q != []:
@@ -737,12 +764,16 @@ class App(Frame):
         print("NFA Selected")
         self.nfa_button.config(relief=SUNKEN)
         self.dfa_button.config(relief=RAISED)
+        self.convert_button.configure(text="CONVERT")
         self.fa = Nfa(name="InputGraphFA")
+        self.input_window.configure_txt(str(self.fa))
         self.clear_input()
 
     def dfa_button_press(self):
         print("DFA Selected")
         self.dfa_button.config(relief=SUNKEN)
         self.nfa_button.config(relief=RAISED)
+        self.convert_button.configure(text="MINIMISE")
         self.fa = Dfa(name="InputGraphFA")
+        self.input_window.configure_txt(str(self.fa))
         self.clear_input()
