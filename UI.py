@@ -377,6 +377,8 @@ class InputBoard(Board):
                 for i in range(2, len(current)):
                     transition_to_remove = current[i]
                     self.transitions.remove(transition_to_remove)
+            else:
+                print("busted")
 
         self.update_input_window()
 
@@ -385,6 +387,7 @@ class InputBoard(Board):
         self.states = []
         self.transitions = []
         self.transition_states = []
+        self.memory = []
 
     @staticmethod
     def find_empty_word(txt, same):
@@ -408,7 +411,6 @@ class OutputBoard(Board):
         self.initialy = height / 2
         self.state_posx = self.initialx
         self.state_posy = self.initialy
-        self.start_x, self.start_y, self.end_x, self.end_y = None, None, None, None
         self.radius = self.main.radius
         self.same_state_transitions = []
 
@@ -459,7 +461,8 @@ class OutputBoard(Board):
             self.canvas.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
                                     tags=(state_name, "circle"), width=1.4)
             self.canvas.create_text(x, y, text=state_name, fill="white",
-                                    tags=(state_name, state_name + "label", "label", (x, y)), font=self.font_extra_small)
+                                    tags=(state_name, state_name + "label", "label", (x, y)),
+                                    font=self.font_extra_small)
         if final == 1:
             self.canvas.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
                                     tags=(state_name, state_name + "final", "circle"), width=1.4)
@@ -542,6 +545,7 @@ class OutputBoard(Board):
         return self.state_posx, self.state_posy
 
     def reset(self):
+        self.same_state_transitions = []
         self.state_posx, self.state_posy = self.initialx, self.initialy
         self.canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text")
 
