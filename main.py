@@ -95,37 +95,6 @@ def run_tests():
 
     Minimise().convert(dfa2)
 
-    # -------------------------------------------------------------------------------------------------------------------
-    nfa3 = Nfa("G")
-    nfa3.add_state("1", False)
-    nfa3.add_state("2", False)
-    nfa3.add_state("3", True)
-    nfa3.add_state("4", False)
-
-    a2 = nfa3.Q[0]
-    b2 = nfa3.Q[1]
-    c2 = nfa3.Q[2]
-    d2 = nfa3.Q[3]
-
-    info5 = [(a2, "a", b2), (a2, "a", a2), (a1, "b", a2), (b2, "a", b2), (b2, "b", c2), (c2, "a", c2), (c2, "b", c2),
-             (d2, "a", c2),
-             (d2, "b", d2)]
-
-    for i in range(len(info5)):
-        nfa3.add_transition(*info5[i])
-
-    print(nfa3)
-
-    Minimise().remove_unreachable_states(nfa3)
-
-    nfa2.add_state("D")
-    D2 = nfa2.get_Q()[3]
-    nfa2.add_transition(D2, "0", C2)
-    nfa2.add_transition(D2, "1", D2)
-    nfa2.add_transition(D2, epsilon, D2)
-    print(nfa2)
-    Determinise().convert(nfa2)
-
     dfa3 = Dfa("F")
     dfa3.add_state("q0", False)
     dfa3.add_state("q1", True)

@@ -35,6 +35,7 @@ class Board:
         """
         self.font = tkFont.Font(family="consolas", size=13)
         self.font_small = tkFont.Font(family="consolas", size=10)
+        self.font_extra_small = tkFont.Font(family="consolas", size=8)
 
     def select_state(self, event):
         x, y = event.x, event.y
@@ -45,7 +46,6 @@ class Board:
         name_tag = tags[0]
         print(name_tag)
         print(event.x, event.y)
-        print(event.widget)
 
         if "label" in tags:
             event.widget.addtag_withtag('selected_txt', tk.CURRENT)
@@ -226,7 +226,7 @@ class InputBoard(Board):
         x, y, r = event.x, event.y, self.radius
         tags = event.widget.gettags(tk.CURRENT)
         name_tag = tags[0]
-        print(name_tag)
+        # print(name_tag)
 
         if len(self.transition_states) < 2:
             if self.transition_states == [] and name_tag in [s.get_name() for s in self.states]:
@@ -257,6 +257,7 @@ class InputBoard(Board):
         tag_to_add = ("self" + state_name, "self_transition")
         tag_to_add_txt = ("self" + state_name + "text", "text")
         existing_arrows = event.widget.find_withtag("self" + state_name + "text")
+        # print(existing_arrows)
 
         x1 = self.start_x - 0.9 * r
         y1 = y2 = self.start_y - 0.5 * r
@@ -273,6 +274,8 @@ class InputBoard(Board):
                                                                "transition.\n\n Multiple letters should be seperated "
                                                                "by commas.",
                                                         parent=event.widget)
+            transition_letters = self.find_empty_word(transition_letters, True)
+
             if transition_letters not in ["", None]:
                 o1 = event.widget.create_text(midx, midy + 15, text=transition_letters, fill="white",
                                               tags=tag_to_add_txt,
@@ -309,7 +312,7 @@ class InputBoard(Board):
         if existing_arrows == ():
             transition_letters = simpledialog.askstring(title="Transition Creation", prompt=input_prompt,
                                                         parent=event.widget)
-            transition_letters = self.find_empty_word(transition_letters)
+            transition_letters = self.find_empty_word(transition_letters, False)
 
             if transition_letters not in ["", None]:
                 o1 = event.widget.create_text(midx, y_txt, text=transition_letters, fill="white", tags=tag_to_add_txt,
@@ -378,10 +381,170 @@ class InputBoard(Board):
 
         self.update_input_window()
 
+    def reset(self):
+        self.canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text")
+        self.states = []
+        self.transitions = []
+        self.transition_states = []
+
     @staticmethod
-    def find_empty_word(txt):
-        to_return = txt.replace("$", epsilon)
+    def find_empty_word(txt, same):
+        if same and txt is not None:
+            to_return = txt.replace("$,", "")
+            to_return = to_return.replace("$", "")
+        elif not same and txt is not None:
+            to_return = txt.replace("$", epsilon)
+        else:
+            to_return = txt
         return to_return
+
+
+class OutputBoard(Board):
+    def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor):
+        super().__init__(main, width, height, bg, highlightthickness, highlightbackground, highlightcolor)
+
+        self.main = main
+        self.flag = False
+        self.initialx = width / 10000
+        self.initialy = height / 2
+        self.state_posx = self.initialx
+        self.state_posy = self.initialy
+        self.start_x, self.start_y, self.end_x, self.end_y = None, None, None, None
+        self.radius = self.main.radius
+        self.same_state_transitions = []
+
+    def get_same_state_transitions(self, fa):
+        letters = None
+        for t in fa.get_d():
+            start = t.get_start_state()
+            end = t.get_end_state()
+            for t in fa.get_d():
+                if t.get_start_state() == start and t.get_end_state() == end:
+                    if letters is None:
+                        letters = t.letter
+                    elif letters is not None and t.letter not in letters:
+                        letters += "," + t.letter
+            combined_transition = DfaTransition(start, letters, end)
+            if combined_transition not in self.same_state_transitions:
+                self.same_state_transitions.append(combined_transition)
+            letters = None
+
+        # print(self.same_state_transitions)
+
+    def render_automaton(self, fa):
+        self.get_same_state_transitions(fa)
+        for s in fa.get_Q():
+            # print(s)
+            self.create_state(s)
+        for t in self.same_state_transitions:
+            # print(t)
+            self.create_transition(t)
+
+    def create_state(self, s):
+        state_name = s.get_name()
+        starting = s.is_start
+        final = s.is_final
+
+        x, y = self.get_state_coordinates()
+        r, r2 = self.radius, self.radius - 3
+
+        if starting:
+            self.canvas.create_line(x - r, y, x - 2.2 * r, y, arrow=tk.FIRST, tags=(state_name, "arrow"),
+                                    fill="white", width=1.45)
+            self.canvas.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
+                                    tags=(state_name, "circle", "first"), width=1.4)
+            self.canvas.create_text(x, y, text=state_name, fill="white",
+                                    tags=(state_name, state_name + "label", "first", "label", (x, y)),
+                                    font=self.font_extra_small)
+        else:
+            self.canvas.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
+                                    tags=(state_name, "circle"), width=1.4)
+            self.canvas.create_text(x, y, text=state_name, fill="white",
+                                    tags=(state_name, state_name + "label", "label", (x, y)), font=self.font_extra_small)
+        if final == 1:
+            self.canvas.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
+                                    tags=(state_name, state_name + "final", "circle"), width=1.4)
+
+    def create_transition(self, t):
+        state1 = self.canvas.find_withtag(t.get_start_name() + "label")
+        state2 = self.canvas.find_withtag(t.get_end_name() + "label")
+        transition_letters = t.letter
+        x1, y1 = self.canvas.coords(state1)
+        x2, y2 = self.canvas.coords(state2)
+        r = self.radius
+
+        if t.get_start_name() == t.get_end_name():
+            name = t.get_start_name()
+            self.draw_self_transition(name, x1, y1, x2, y2, transition_letters, r)
+            # print("self-drawn" + str(t))
+        else:
+            name1 = t.get_start_name()
+            name2 = t.get_end_name()
+            self.draw_transition(name1, name2, x1, y1, x2, y2, transition_letters, r)
+            # print("drawn" + str(t))
+
+    def draw_self_transition(self, name, x1, y1, x2, y2, transition_letters, r):
+        state_name = name
+        tag_to_add = ("self" + state_name, "self_transition")
+        tag_to_add_txt = ("self" + state_name + "text", "text")
+
+        x1 = x1 - 0.9 * r
+        y1 = y1 - 0.5 * r
+        x2 = x1 + 0.9 * r
+        y2 = y1
+
+        midx = (x1 + x2) / 2
+        midy = (y1 - 3 * r)
+
+        points = ((x1, y1), (midx, midy), (x2, y2))
+
+        if transition_letters not in ["", None]:
+            self.canvas.create_text(midx, midy + 15, text=transition_letters, fill="white",
+                                    tags=tag_to_add_txt, font=self.font_small)
+
+            self.canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+
+    def draw_transition(self, name1, name2, x1, y1, x2, y2, transition_letters, r):
+        midx = y_txt = points = None
+
+        tag_to_add = ["from_" + name1, "to_" + name2, "transition"]
+        if x1 <= x2:
+            tag_to_add.append("type1")
+
+            midx = (x1 + x2) / 2
+            midy = (y1 + y2) / 2 - np.abs(x1 - x2) / 6
+            y_txt = midy - 1
+            points = ((x1 + r, y1 - r / 2), (midx, midy), (x2 - r, y2 - r / 2))
+
+        elif x1 > x2:
+            tag_to_add.append("type2")
+
+            midx = (x1 + x2) / 2
+            midy = (y1 + y2) / 2 + np.abs(x1 - x2) / 6
+            y_txt = midy + 1
+            points = ((x1 - r, y1 + r / 2), (midx, midy), (x2 + r, y2 + r / 2))
+
+        tag_to_add_txt = (str((*tag_to_add, "text")), "text")
+
+        if transition_letters not in ["", None]:
+            self.canvas.create_text(midx, y_txt, text=transition_letters, fill="white", tags=tag_to_add_txt,
+                                    font=self.font_small)
+            self.canvas.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
+
+    def get_state_coordinates(self):
+        self.state_posx += 10 * self.radius
+        if not self.flag:
+            # self.state_posy = self.initialy + 2 * self.radius
+            self.flag = True
+        else:
+            # self.state_posy = self.initialy - 2 * self.radius
+            self.flag = False
+        # print(self.state_posx, self.state_posy)
+        return self.state_posx, self.state_posy
+
+    def reset(self):
+        self.state_posx, self.state_posy = self.initialx, self.initialy
+        self.canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text")
 
 
 class Window:
@@ -420,18 +583,19 @@ class Window:
 
 
 class OutputWindow(Window):
-    def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor):
+    def __init__(self, main, width, height, bg, highlightthickness, highlightbackground, highlightcolor, offset=50):
         super().__init__(main, width, height, bg, highlightthickness, highlightbackground, highlightcolor)
 
+        self.offset = offset
         self.starting_string = "\nTransition table" + "\n\n" + "    |  " + delta + "   "
         self.table_to_print = self.starting_string
-        self.canvas.create_text(width / 50, height / 50, text=self.table_to_print, fill="black",
+        self.canvas.create_text(width / 50, height / offset, text=self.table_to_print, fill="white",
                                 tags="output_table", font=self.font, anchor=NW)
 
     def update_output(self, string):
         self.table_to_print = string
         self.canvas.delete("output_table")
-        self.canvas.create_text(self.width / 100, self.height / 100, text=self.table_to_print, fill="black",
+        self.canvas.create_text(self.width / 100, self.height / self.offset, text=self.table_to_print, fill="white",
                                 tags="output_table", font=self.font, anchor=NW)
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
 
@@ -448,15 +612,20 @@ class App(Frame):
 
         self.width = 1400
         self.height = 850
+        self.font = tkFont.Font(family="consolas", size=14)
 
-        self.fa = Dfa(name="InputGraphFA")
+        self.fa = Nfa(name="InputGraphFA")
 
         self.pack(expand=Y, fill=BOTH)
 
+        self.image0 = Image.open("images//logo.ico")
         self.image1 = Image.open("images//Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
         self.image2 = Image.open("images//Blackboard2.jpg").resize((self.width, self.height), Image.ANTIALIAS)
+        self.image3 = Image.open("images//Window_Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
+        self.main_logo = ImageTk.PhotoImage(self.image0)
         self.bg1 = ImageTk.PhotoImage(self.image1)
         self.bg2 = ImageTk.PhotoImage(self.image2)
+        self.bg3 = ImageTk.PhotoImage(self.image3)
 
         self.main_canvas = Canvas(self, width=self.width, height=self.height, bg="gray")
         # self.main_canvas.create_image(0,0,image=self.bg, anchor="nw")
@@ -465,44 +634,68 @@ class App(Frame):
         self.input_board = InputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
                                       bg='white', highlightthickness=5, highlightbackground="black",
                                       highlightcolor="black")
-        self.input_board.canvas.create_image(0, 0, image=self.bg1, anchor="nw", tag="background")
+        self.input_board.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
         self.input_board.canvas.pack()
 
-        self.output_board = tk.Canvas(self.main_canvas, width=self.width * 0.705, height=self.height * 0.435,
-                                      bg='white', highlightthickness=5, highlightbackground="black",
-                                      highlightcolor="black")
-        self.output_board.create_image(0, 0, image=self.bg2, anchor="nw", tag="background")
-        self.output_board.pack()
+        self.output_board = OutputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
+                                        bg='white', highlightthickness=5, highlightbackground="black",
+                                        highlightcolor="black")
+        self.output_board.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
+        self.output_board.canvas.pack()
 
         self.input_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
                                          bg='white', highlightthickness=5, highlightbackground="black",
-                                         highlightcolor="black")
+                                         highlightcolor="black", offset=7)
+        self.input_window.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
         self.input_window.canvas.pack()
 
         self.output_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
                                           bg='white', highlightthickness=5, highlightbackground="black",
                                           highlightcolor="black")
+        self.output_window.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
         self.output_window.canvas.pack()
+
+        self.clear_button = tk.Button(self, text="CLEAR", anchor="center", command=lambda: self.clear_input())
+        self.clear_button.configure(width=20, height=1, activebackground="gray", relief=FLAT)
+        self.main_canvas.create_window(self.width / 2, self.height / 1.045, anchor=NW, window=self.clear_button)
+
+        self.dfa_button = tk.Button(self, text="DFA", anchor="center", bg="gray",
+                                    command=lambda: self.dfa_button_press())
+        self.dfa_button.configure(width=24, height=1, activebackground="black", activeforeground="white", relief=RAISED)
+
+        self.nfa_button = tk.Button(self, text="NFA", anchor="center", bg="gray", fg="black",
+                                    command=lambda: self.nfa_button_press())
+        self.nfa_button.configure(width=24, height=1, activebackground="black", activeforeground="white", relief=SUNKEN)
+
+        self.convert_button = tk.Button(self, text="CONVERT", anchor="center", bg="gray", fg="black",
+                                        command=lambda: self.convert_fa())
+        self.convert_button.configure(width=48, height=1, activebackground="black", activeforeground="white", bd=3.5,
+                                      relief=FLAT)
 
         self.setup()
 
     def setup(self):
         self.winfo_toplevel().title("VoFA")
-        label = Entry(self)
-        # label.pack(side="top", fill="x")
+        # self.winfo_toplevel().iconphoto(True, self.main_logo)
+        self.winfo_toplevel().iconbitmap("images//logo.ico")
 
         self.main_canvas.create_window(389, 31, anchor=NW, window=self.input_board.container)
-        self.main_canvas.create_window(389, 424, anchor=NW, window=self.output_board)
+        self.main_canvas.create_window(389, 424, anchor=NW, window=self.output_board.container)
         self.main_canvas.create_window(17, 31, anchor=NW, window=self.input_window.container)
         self.main_canvas.create_window(17, 424, anchor=NW, window=self.output_window.container)
+        self.main_canvas.create_window(22, 36, anchor=NW, window=self.nfa_button)
+        self.main_canvas.create_window(194.3, 36, anchor=NW, window=self.dfa_button)
+        self.main_canvas.create_window(22, 63, anchor=NW, window=self.convert_button)
 
         self.input_board.canvas.bind('<1>', self.input_board.select_state)
         self.input_board.canvas.bind('<Shift-1>', self.input_board.create_state)
         self.input_board.canvas.bind('<Control-1>', self.input_board.create_transition)
         self.input_board.canvas.bind('<BackSpace>', self.clear_input)
         self.input_board.canvas.bind('r', self.create_automaton)
-        self.input_board.canvas.bind('t', self.minimize_dfa)
+        self.input_board.canvas.bind('t', self.convert_fa)
         self.input_board.canvas.bind('<Control-z>', self.input_board.undo)
+
+        self.output_board.canvas.bind('<1>', self.input_board.select_state)
 
     def create_automaton(self):
         if self.fa.Q != []:
@@ -515,19 +708,38 @@ class App(Frame):
                 self.fa.add_transition(*t)
         return self.fa
 
-    def minimize_dfa(self, event):
+    def convert_fa(self):
+        self.output_board.reset()
+        if self.fa.type() == "dfa":
+            if self.fa.is_valid():
+                min = Minimise()
+                minimised_fa = min.convert(self.fa)
+                self.output_window.update_output(str(minimised_fa))
+                self.output_board.render_automaton(minimised_fa)
+        elif self.fa.type() == "nfa":
+            if self.fa.Q != [] and self.fa.d != []:
+                det = Determinise()
+                determinised_fa = det.convert(self.fa)
+                self.output_window.update_output(str(determinised_fa))
+                self.output_board.render_automaton(determinised_fa)
 
-        if self.fa.Q != [] and self.fa.is_valid():
-            min = Minimise()
-            minimised_fa = min.convert(self.fa)
-            self.output_window.update_output(str(minimised_fa))
-            print(minimised_fa)
-
-    def clear_input(self, event):
-        self.input_board.canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text")
-        self.input_board.states = []
-        self.input_board.transitions = []
-        self.input_board.transition_states = []
+    def clear_input(self):
+        self.input_board.reset()
+        self.output_board.reset()
         self.fa.clear()
         self.input_window.reset_output()
         self.output_window.reset_output()
+
+    def nfa_button_press(self):
+        print("NFA Selected")
+        self.nfa_button.config(relief=SUNKEN)
+        self.dfa_button.config(relief=RAISED)
+        self.fa = Nfa(name="InputGraphFA")
+        self.clear_input()
+
+    def dfa_button_press(self):
+        print("DFA Selected")
+        self.dfa_button.config(relief=SUNKEN)
+        self.nfa_button.config(relief=RAISED)
+        self.fa = Dfa(name="InputGraphFA")
+        self.clear_input()

@@ -85,41 +85,64 @@ class Determinise(object):
 
         return epsilon_closures
 
+    # needs more work, there are corner cases
     @classmethod
-    def merged_state(cls, same_letter_transitions, q):
+    def merged_state(cls, nfa, same_letter_transitions, q):
+        name_memory = []
         new_state_name = ""
         starting = False
         final = False
-
+        print(same_letter_transitions)
         for t in same_letter_transitions:
-            # print(t)
+            print(t)
 
             if len(t.get_end_states()) > 1:
-                # print("more than one end states")
-                for s in t.get_end_states():
+                print("more than one end states")
+                for s in sorted(t.get_end_states()):
+                    print(s)
                     if s.is_final:
                         final = True
-                    if new_state_name == "":
-                        new_state_name += s.get_name()
-                    else:
-                        new_state_name += "," + s.get_name()
+                    if name_memory == []:
+                        name_memory.append(s.get_name())
+                    elif name_memory != [] and s.get_name() not in name_memory:
+                        name_memory.append(s.get_name())
 
             elif len(t.get_end_states()) == 1:
-                # print("one end state")
+                print("one end state")
+                start_s = t.get_start_state()
                 end_s = t.get_end_states()[0]
+                print("end state = " + str(end_s))
 
                 if end_s.is_final:
                     final = True
                 if end_s.get_name() != void:
-                    if new_state_name == "":
-                        new_state_name += end_s.get_name()
-                    elif end_s.get_name() not in new_state_name:
-                        new_state_name += "," + end_s.get_name()
+                    if name_memory == []:
+                        name_memory.append(end_s.get_name())
+                    elif name_memory != [] and end_s.get_name() not in name_memory:
+                        name_memory.append(end_s.get_name())
+                elif end_s.get_name() == void:
+                    if name_memory == []:
+                        name_memory.append(start_s.get_name())
+                        if start_s.is_final:
+                            final = True
 
-        if new_state_name == q[0].get_name():
+        name_memory = sorted(name_memory)
+        print(name_memory)
+
+        if len(name_memory) > 1:
+            new_state_name = name_memory[0]
+            for i in range(1, len(name_memory)):
+                new_state_name += "," + name_memory[i]
+        elif len(name_memory) == 1:
+            new_state_name = name_memory[0]
+        else:
+            new_state_name = ""
+        new_state_name = str(new_state_name)
+
+        if new_state_name == q[0].get_name() or new_state_name == nfa.get_Q()[0].get_name():
             starting = True
 
-        # print(new_state_name, starting, final)
+        print(new_state_name, starting, final)
         return new_state_name, starting, final
 
     @classmethod
@@ -147,7 +170,7 @@ class Determinise(object):
                     Q.append(i)
 
         for s0 in Q:
-            # print("For state " + str(s0))
+            print("\nFor state " + str(s0))
             state_transitions = []
 
             for t in delta:
@@ -157,7 +180,7 @@ class Determinise(object):
             for letter in sigma:
                 state_letter_transitions = [i for i in state_transitions if i.letter == letter]
 
-                new_state_name, starting, final = cls.merged_state(state_letter_transitions, Q)
+                new_state_name, starting, final = cls.merged_state(nfa, state_letter_transitions, Q)
 
                 if new_state_name == "":
                     s_ = s0
@@ -172,7 +195,7 @@ class Determinise(object):
                         if s_ not in Q:
                             Q.append(s_)
 
-                    # print("End State : " + new_state_name + " with letter " + letter)
+                    print("End State : " + new_state_name + " with letter " + letter)
 
         dfa_name = nfa.get_name() + ".to_DFA"
         output_dfa = Dfa(dfa_name)
@@ -183,8 +206,8 @@ class Determinise(object):
         for j in transitions_to_add:
             output_dfa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
 
-        # print(output_dfa.get_table())
         print(output_dfa)
+        return output_dfa
 
 
 """******************************************* DFA TO minDFA *******************************************************"""
@@ -229,7 +252,10 @@ class Minimise(object):
     @classmethod
     def hopcroft_algorithm(cls, input_dfa):
         p = input_dfa.get_F()
-        p = [p, [s for s in input_dfa.get_Q() if s not in input_dfa.get_F()]]
+        if p == []:
+            p = [[s for s in input_dfa.get_Q() if s not in input_dfa.get_F()]]
+        else:
+            p = [p, [s for s in input_dfa.get_Q() if s not in input_dfa.get_F()]]
         w = p.copy()
 
         while w != []:
@@ -261,6 +287,7 @@ class Minimise(object):
                                 w.append(intersection)
                             else:
                                 w.append(diff)
+
         print("Partitions = " + str(p))
         return p
 

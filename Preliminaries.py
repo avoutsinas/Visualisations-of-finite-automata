@@ -24,6 +24,12 @@ class State:
         else:
             return False
 
+    def __lt__(self, other):
+        if self.name < other.name:
+            return True
+        else:
+            return False
+
     # misc
 
     def __str__(self):

@@ -1,7 +1,7 @@
 import numpy as np
 from Preliminaries import *
 
-empty_end_state = State(void)
+empty_end_state = State(state_name=void)
 
 
 class Fa:
@@ -137,7 +137,7 @@ class Fa:
 
                 for letter in remaining:
                     self.add_transition(s, letter, empty_end_state)
-                    # print(DfaTransition(s, letter, State(void)))
+                    #print(DfaTransition(s, letter, empty_end_state))
         return self.d
 
     def find_table_size(self):
@@ -213,15 +213,19 @@ class Dfa(Fa):
         k = 0
         size = "{:^" + str(self.find_table_size() + 4) + "s}|"
         for line in table:
-            k = size * len(table[0])
-            r += k.format(*line) + "\n"
-            r += "-" * len(k.format(*line)) + "\n"
+            try:
+                print(line)
+                k = size * len(table[0])
+                r += k.format(*line) + "\n"
+                r += "-" * len(k.format(*line)) + "\n"
+            except ValueError:
+                pass
 
         if self.is_valid():
-            return ("\nTransition table for DFA " + self.name) + "\n\n" + r
+            return ("\nDFA " + self.name) + "\n\n" + r
         else:
             error = "\n" + " " * 5 + "This DFA is not valid!"
-            return ("\nTransition table for DFA " + self.name) + "\n\n" + r + error
+            return ("\nDFA " + self.name) + "\n\n" + r + error
 
 
 class Nfa(Fa):
@@ -269,4 +273,4 @@ class Nfa(Fa):
             r += k.format(*line) + "\n"
             r += "-" * len(k.format(*line)) + "\n"
 
-        return ("\nTransition table for NFA " + self.name) + "\n\n" + r
+        return ("\nNFA " + self.name) + "\n\n" + r
