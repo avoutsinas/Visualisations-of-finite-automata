@@ -18,7 +18,6 @@ class Board:
                                 highlightbackground=highlightbackground, highlightcolor=highlightcolor,
                                 scrollregion=(0, 0, 1.4 * width, 2 * height))
 
-        """
         self.y_scrollbar = tk.Scrollbar(self.container, orient="vertical", command=self.canvas.yview, jump=1,
                                         width=12, troughcolor="black")
         self.scrollable_y_frame = tk.Frame(self.canvas)
@@ -32,7 +31,7 @@ class Board:
         self.canvas.create_window((0, 0), window=self.scrollable_x_frame, anchor="nw")
         self.canvas.configure(xscrollcommand=self.x_scrollbar.set)
         self.x_scrollbar.pack(side="bottom", fill="x")
-        """
+
         self.font = tkFont.Font(family="consolas", size=13)
         self.font_small = tkFont.Font(family="consolas", size=10)
         self.font_extra_small = tkFont.Font(family="consolas", size=8)
@@ -490,7 +489,7 @@ class OutputBoard(Board):
 
         x1 = x1 - 0.9 * r
         y1 = y1 - 0.5 * r
-        x2 = x1 + 0.9 * r
+        x2 = x1 + 2 * 0.9 * r
         y2 = y1
 
         midx = (x1 + x2) / 2
