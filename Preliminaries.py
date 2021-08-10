@@ -1,6 +1,9 @@
 import numpy as np
 
 epsilon = '\u03B5'
+void = "\u00D8"
+delta = "\u03B4"
+Delta = "\u0394"
 
 
 class State:
@@ -17,6 +20,12 @@ class State:
 
     def __eq__(self, other):
         if self.name == other.name and self.is_start == other.is_start and self.is_final == other.is_final:
+            return True
+        else:
+            return False
+
+    def __lt__(self, other):
+        if self.name < other.name:
             return True
         else:
             return False
