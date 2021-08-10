@@ -32,14 +32,14 @@ class Board:
 
         self.y_scrollbar = tk.Scrollbar(self.container, orient="vertical", command=self.canvas.yview, jump=1,
                                         width=12, troughcolor="black")
-        self.scrollable_y_frame = tk.Frame(self.canvas)
+        self.scrollable_y_frame = tk.Frame(self.container)
         self.canvas.create_window((0, 0), window=self.scrollable_y_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.y_scrollbar.set)
         self.y_scrollbar.pack(side="right", fill="y")
 
         self.x_scrollbar = tk.Scrollbar(self.container, orient="horizontal", command=self.canvas.xview, jump=1,
                                         width=12, troughcolor="black")
-        self.scrollable_x_frame = tk.Frame(self.canvas)
+        self.scrollable_x_frame = tk.Frame(self.container)
         self.canvas.create_window((0, 0), window=self.scrollable_x_frame, anchor="nw")
         self.canvas.configure(xscrollcommand=self.x_scrollbar.set)
         self.x_scrollbar.pack(side="bottom", fill="x")
@@ -572,14 +572,14 @@ class Window:
 
         self.y_scrollbar = tk.Scrollbar(self.container, orient="vertical", command=self.canvas.yview, jump=1,
                                         width=12, troughcolor="black")
-        self.scrollable_y_frame = tk.Frame(self.canvas)
+        self.scrollable_y_frame = tk.Frame(self.container)
         self.canvas.create_window((0, 0), window=self.scrollable_y_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.y_scrollbar.set)
         self.y_scrollbar.pack(side="right", fill="y")
 
         self.x_scrollbar = tk.Scrollbar(self.container, orient="horizontal", command=self.canvas.xview, jump=1,
                                         width=12, troughcolor="black")
-        self.scrollable_x_frame = tk.Frame(self.canvas)
+        self.scrollable_x_frame = tk.Frame(self.container)
         self.canvas.create_window((0, 0), window=self.scrollable_x_frame, anchor="nw")
         self.x_scrollbar.pack(side="bottom", fill="x")
 
@@ -647,40 +647,36 @@ class App(Frame):
         self.pack(expand=Y, fill=BOTH)
 
         self.image0 = Image.open("images//logo.ico")
-        self.image1 = Image.open("images//Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
-        self.image2 = Image.open("images//Blackboard2.jpg").resize((self.width, self.height), Image.ANTIALIAS)
-        self.image3 = Image.open("images//Window_Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
+        self.image1 = Image.open("images//Window_Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
         self.main_logo = ImageTk.PhotoImage(self.image0)
-        self.bg1 = ImageTk.PhotoImage(self.image1)
-        self.bg2 = ImageTk.PhotoImage(self.image2)
-        self.bg3 = ImageTk.PhotoImage(self.image3)
+        self.bg = ImageTk.PhotoImage(self.image1)
 
-        self.main_canvas = Canvas(self, width=self.width, height=self.height, bg="gray")
+        self.main_canvas = Canvas(self, width=self.width + 12, height=self.height, bg="gray")
         # self.main_canvas.create_image(0,0,image=self.bg, anchor="nw")
         self.main_canvas.pack(expand=Y, fill=BOTH)
 
         self.input_board = InputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
                                       bg='white', highlightthickness=5, highlightbackground="black",
                                       highlightcolor="black")
-        self.input_board.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
+        self.input_board.canvas.create_image(0, 0, image=self.bg, anchor="nw", tag="background")
         self.input_board.canvas.pack()
 
         self.output_board = OutputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
                                         bg='white', highlightthickness=5, highlightbackground="black",
                                         highlightcolor="black")
-        self.output_board.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
+        self.output_board.canvas.create_image(0, 0, image=self.bg, anchor="nw", tag="background")
         self.output_board.canvas.pack()
 
         self.input_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
                                          bg='white', highlightthickness=5, highlightbackground="black",
                                          highlightcolor="black", offset=7, txt=str(self.fa))
-        self.input_window.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
+        self.input_window.canvas.create_image(0, 0, image=self.bg, anchor="nw", tag="background")
         self.input_window.canvas.pack()
 
         self.output_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
                                           bg='white', highlightthickness=5, highlightbackground="black",
                                           highlightcolor="black", txt=tutorial_txt1)
-        self.output_window.canvas.create_image(0, 0, image=self.bg3, anchor="nw", tag="background")
+        self.output_window.canvas.create_image(0, 0, image=self.bg, anchor="nw", tag="background")
         self.output_window.canvas.pack()
 
         self.clear_button = tk.Button(self, text="CLEAR", anchor="center", command=lambda: self.clear_input())
