@@ -783,6 +783,18 @@ class App(Frame):
         self.winfo_toplevel().title("VoFA")
         self.winfo_toplevel().iconbitmap(default="images//logo.ico")
 
+        # get screen width and height
+        ws = self.winfo_screenwidth()  # width of the screen
+        hs = self.winfo_screenheight() - 100  # height of the screen
+
+        # calculate x and y coordinates for the Tk root window
+        x = (ws / 2) - ((self.width + 12) / 2)
+        y = (hs / 2) - (self.height / 2)
+
+        # set the dimensions of the screen
+        # and where it is placed
+        self.winfo_toplevel().geometry('%dx%d+%d+%d' % ((self.width + 12), self.height, x, y))
+
         self.main_canvas.create_window(389, 31, anchor=NW, window=self.input_board.container)
         self.main_canvas.create_window(389, 424, anchor=NW, window=self.output_board.container)
         self.main_canvas.create_window(17, 31, anchor=NW, window=self.input_window.container)
@@ -844,3 +856,34 @@ class App(Frame):
         self.fa = Dfa(name="InputGraphFA")
         self.input_window.configure_txt(str(self.fa))
         self.clear_input()
+
+
+def app_startup(skip=True):
+
+    if not skip:
+        splash_root = Tk()
+        splash_root.overrideredirect(1)
+        splash_root.title("VoFa")
+        splash_root.winfo_toplevel().iconbitmap(default="images//logo.ico")
+
+        splash_root_canvas = tk.Canvas(splash_root, width=700, height=500)
+        splash_image = Image.open("images//logo.png").resize((700, 500), Image.ANTIALIAS)
+        splash_logo = ImageTk.PhotoImage(splash_image)
+        splash_root_canvas.create_image(0, 0, image=splash_logo, anchor="nw", tag="background")
+        splash_root_canvas.pack()
+
+        # get screen width and height
+        ws = splash_root.winfo_screenwidth()  # width of the screen
+        hs = splash_root.winfo_screenheight() - 100  # height of the screen
+
+        # calculate x and y coordinates for the Tk root window
+        x = (ws / 2) - (700 / 2)
+        y = (hs / 2) - (500 / 2)
+
+        # set the dimensions of the screen
+        # and where it is placed
+        splash_root.winfo_toplevel().geometry('%dx%d+%d+%d' % (700, 500, x, y))
+
+        splash_root.after(2000, splash_root.destroy)  # after(ms,func)
+        splash_root.mainloop()
+    App().mainloop()
