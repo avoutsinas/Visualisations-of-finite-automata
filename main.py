@@ -126,7 +126,7 @@ def run_tests():
 def main(test=False):
     if test:
         run_tests()
-    app_startup(skip=False)
+    app_startup()
 
 
 if __name__ == "__main__":

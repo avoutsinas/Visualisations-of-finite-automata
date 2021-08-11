@@ -858,7 +858,7 @@ class App(Frame):
         self.clear_input()
 
 
-def app_startup(skip=True):
+def app_startup(skip=False):
 
     if not skip:
         splash_root = Tk()
