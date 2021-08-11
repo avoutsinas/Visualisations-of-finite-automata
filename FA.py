@@ -259,6 +259,9 @@ class Nfa(Fa):
                 self.sigma.append(letter_str)
 
     # misc
+    @staticmethod
+    def is_valid():
+        return False
 
     @staticmethod
     def type():

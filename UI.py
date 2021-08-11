@@ -12,13 +12,16 @@ tutorial_txt1 = "                  Welcome!" \
                 "\n\n You can begin constructing an automaton!" \
                 "\n\n                  Keybinds:" \
                 "\n\n State Creation: Shift-LMB" \
-                "\n\n Transition Creation: Hold Control-LMB" \
-                "\n (Click two states by holding down Control)" \
+                "\n\n Set Final Value: RMB" \
+                "\n\n Transition Creation: Control-LMB" \
+                "\n\n * Click a state by holding down Control" \
+                '\n\n * For the empty arrow use the symbol "$" ' \
                 "\n\n Undo Action: Control-Z " \
                 "\n\n               Functionality:" \
                 "\n\n Depending on your selected options you can: " \
                 "\n\n a) Convert a NFA to its equivalent DFA" \
-                "\n\n b) Convert a DFA to its minimal form"
+                "\n\n b) Convert a NFA to its equivalent min-DFA" \
+                "\n\n c) Convert a DFA to its minimal form"
 
 
 class Board:
