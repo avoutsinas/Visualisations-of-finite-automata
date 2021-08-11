@@ -729,6 +729,7 @@ class App(Frame):
         self.width = 1400
         self.height = 850
         self.font = tkFont.Font(family="consolas", size=14)
+        self.font_small = tkFont.Font(family="consolas", size=10)
 
         self.fa = Nfa(name="InputGraphFA")
 
@@ -759,19 +760,20 @@ class App(Frame):
                                           bg='white', highlightthickness=5, highlightbackground="black",
                                           highlightcolor="black", txt=tutorial_txt1)
 
-        self.clear_button = tk.Button(self, text="CLEAR", anchor="center", command=lambda: self.clear_input())
+        self.clear_button = tk.Button(self, text="CLEAR", anchor="center", command=lambda: self.clear_input(),
+                                      font=self.font_small)
         self.clear_button.configure(width=20, height=1, activebackground="gray", relief=FLAT)
 
         self.dfa_button = tk.Button(self, text="DFA", anchor="center", bg="gray",
-                                    command=lambda: self.dfa_button_press())
+                                    command=lambda: self.dfa_button_press(), font=self.font_small)
         self.dfa_button.configure(width=24, height=1, activebackground="black", activeforeground="white", relief=RAISED)
 
         self.nfa_button = tk.Button(self, text="NFA", anchor="center", bg="gray", fg="black",
-                                    command=lambda: self.nfa_button_press())
+                                    command=lambda: self.nfa_button_press(), font=self.font_small)
         self.nfa_button.configure(width=24, height=1, activebackground="black", activeforeground="white", relief=SUNKEN)
 
         self.convert_button = tk.Button(self, text="CONVERT", anchor="center", bg="gray", fg="black",
-                                        command=lambda: self.convert_fa())
+                                        command=lambda: self.convert_fa(), font=self.font_small)
         self.convert_button.configure(width=48, height=1, activebackground="black", activeforeground="white", bd=3.5,
                                       relief=FLAT)
 
