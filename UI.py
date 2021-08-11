@@ -376,9 +376,9 @@ class InputBoard(Board):
     def draw_tracer_line(self, event):
         x1, y1, x2, y2 = self.start_x, self.start_y, event.x, event.y
 
-        if abs(x1 - x2) < self.radius and abs(y1-y2) < self.radius:
+        if abs(x1 - x2) < self.radius and abs(y1 - y2) < self.radius:
             x1 = x1 - self.radius
-            x2 = x1 + 2*self.radius
+            x2 = x1 + 2 * self.radius
             y2 = y1 = y1 - 9
             midx = (x1 + x2) / 2
             midy = (y1 - 3 * self.radius)
@@ -499,6 +499,8 @@ class OutputBoard(Board):
         self.state_posy = self.initialy
         self.radius = self.main.radius
         self.same_state_transitions = []
+
+        self.setup()
 
     def get_same_state_transitions(self, fa):
         letters = None
@@ -776,8 +778,7 @@ class App(Frame):
 
     def setup(self):
         self.winfo_toplevel().title("VoFA")
-        # self.winfo_toplevel().iconphoto(True, self.main_logo)
-        self.winfo_toplevel().iconbitmap("images//logo.ico")
+        self.winfo_toplevel().iconbitmap(default="images//logo.ico")
 
         self.main_canvas.create_window(389, 31, anchor=NW, window=self.input_board.container)
         self.main_canvas.create_window(389, 424, anchor=NW, window=self.output_board.container)
