@@ -50,7 +50,7 @@ class Board:
 
     def select_state(self, event):
         x, y = event.x, event.y
-        event.widget.bind('<Motion>', self.move_state)
+        event.widget.bind('<B1-Motion>', self.move_state)
         event.widget.bind('<ButtonRelease-1>', self.deselect)
 
         tags = event.widget.gettags(tk.CURRENT)
@@ -74,7 +74,7 @@ class Board:
         event.widget.dtag("selected_final")
         event.widget.dtag("selected_self_transition")
         event.widget.dtag("selected_self_transition_text")
-        event.widget.unbind('<Motion>')
+        event.widget.unbind('<B1-Motion>')
 
     def move_state(self, event):
         x, y, r, r2 = event.x, event.y, self.radius, self.radius - 3
@@ -179,29 +179,31 @@ class InputBoard(Board):
         self.transitions = []
         self.transition_states = []
         self.memory = []
+        self.tracer_drawn = False
+
+        self.setup()
+
+    def setup(self):
+        self.canvas.bind('<1>', self.select_state)
+        self.canvas.bind('<2>', self.set_final)
+        self.canvas.bind('<3>', self.set_final)
+        self.canvas.bind('<Shift-1>', self.create_state)
+        self.canvas.bind('<Control-1>', self.create_transition)
+        self.canvas.bind('<Control-z>', self.undo)
 
     def create_state(self, event):
         new_state = None
         starting = False
-        final = None
+        final = False
 
         state_name = simpledialog.askstring(title="State Creation", prompt="Enter the name of the State",
                                             parent=event.widget)
 
-        if state_name is not None:
-            final = simpledialog.askinteger(title="State Creation", prompt="Is this a final state?\n(0 for non-final "
-                                                                           "or 1 for final)",
-                                            parent=event.widget)
-
-            while state_name == "" or state_name in [i.get_name() for i in self.states]:
-                state_name = simpledialog.askstring(title="State Creation",
-                                                    prompt="States must have non-empty and unique "
-                                                           "names.\n\n" "Please select a unique "
-                                                           "name for this state",
-                                                    parent=event.widget)
-            while final not in [0, 1, None]:
-                final = simpledialog.askinteger(title="State Creation", prompt="Please enter 0 for non-final\nor 1 for "
-                                                                               "final",
+        while state_name == "" or state_name in [i.get_name() for i in self.states]:
+            state_name = simpledialog.askstring(title="State Creation",
+                                                prompt="States must have non-empty and unique "
+                                                       "names.\n\n" "Please select a unique "
+                                                       "name for this state",
                                                 parent=event.widget)
 
         if state_name is not None and final is not None:
@@ -221,17 +223,33 @@ class InputBoard(Board):
                                          tags=(state_name, "circle"), width=1.4)
                 event.widget.create_text(x, y, text=state_name, fill="white",
                                          tags=(state_name, state_name + "label", "label"), font=self.font)
-            if final == 1:
-                event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
-                                         tags=(state_name, state_name + "final", "circle"), width=1.4)
 
-                new_state = State(state_name, starting, True)
-            else:
-                new_state = State(state_name, starting, False)
+            new_state = State(state_name, starting, final)
 
         if state_name not in ["", None] and final is not None:
             self.record_state(new_state)
         print(self.states)
+
+    def set_final(self, event):
+        r, r2 = self.radius, self.radius - 3
+        tags = event.widget.gettags(tk.CURRENT)
+
+        if "label" in tags:
+            x, y = event.widget.coords(tags[0] + "label")
+            state_name = tags[0]
+
+            selected_state = [s for s in self.states if s.get_name() == state_name][0]
+            final = selected_state.is_final
+
+            if final:
+                self.canvas.delete(state_name + "final")
+                selected_state.is_final = False
+            else:
+                event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
+                                         tags=(state_name, state_name + "final", "circle"), width=1.4)
+                selected_state.is_final = True
+
+            self.update_input_window()
 
     def create_transition(self, event):
         x, y, r = event.x, event.y, self.radius
@@ -245,6 +263,7 @@ class InputBoard(Board):
                     item = event.widget.find_withtag(name_tag + "label")
                     self.start_x, self.start_y = event.widget.coords(item)
                     self.transition_states.append(name_tag)
+                    self.set_tracer(False)
 
             elif len(self.transition_states) == 1 and name_tag in [s.get_name() for s in self.states]:
                 if name_tag != self.transition_states[0] and "label" in tags:
@@ -253,6 +272,8 @@ class InputBoard(Board):
                     self.transition_states.append(name_tag)
                     self.draw_transition(event, r)
                     self.transition_states = []
+                    self.set_tracer(True)
+                    print(self.tracer_drawn)
                 elif name_tag == self.transition_states[0] and "label" in tags:
                     item = event.widget.find_withtag(name_tag + "label")
                     self.end_x, self.end_y = event.widget.coords(item)
@@ -260,8 +281,12 @@ class InputBoard(Board):
                     self.transition_states.append(name_tag)
                     self.draw_self_transition(event, r)
                     self.transition_states = []
+                    self.set_tracer(True)
+                    print(self.tracer_drawn)
             else:
                 self.transition_states = []
+                self.set_tracer(True)
+                print(self.tracer_drawn)
 
     def draw_self_transition(self, event, r):
         state_name = self.transition_states[0]
@@ -331,6 +356,55 @@ class InputBoard(Board):
                 o2 = event.widget.create_line(points, arrow='last', smooth=1, fill="white", tags=tag_to_add, width=1.45)
                 self.record_transition(transition_letters, o1, o2, same=False)
 
+    def set_tracer(self, stop):
+        if not stop:
+            self.canvas.unbind('<1>')
+            self.canvas.unbind('<Shift-1>')
+            self.canvas.unbind('<Control-z>')
+            self.canvas.unbind('<B1-Motion>')
+            self.canvas.bind('<1>', self.create_transition)
+            self.canvas.bind('<Motion>', self.draw_tracer_line)
+        elif stop:
+            self.canvas.unbind('<1>')
+            self.tracer_drawn = False
+            self.canvas.bind('<1>', self.select_state)
+            self.canvas.bind('<Shift-1>', self.create_state)
+            self.canvas.bind('<Control-z>', self.undo)
+            self.canvas.delete("tracer")
+            self.canvas.unbind('<Motion>')
+
+    def draw_tracer_line(self, event):
+        x1, y1, x2, y2 = self.start_x, self.start_y, event.x, event.y
+
+        if abs(x1 - x2) < self.radius and abs(y1-y2) < self.radius:
+            x1 = x1 - self.radius
+            x2 = x1 + 2*self.radius
+            y2 = y1 = y1 - 9
+            midx = (x1 + x2) / 2
+            midy = (y1 - 3 * self.radius)
+            points = (x1, y1, midx, midy, x2, y2)
+        else:
+            if x1 <= x2 and y1 <= y2:
+                x1 = x1 + self.radius
+                x2, y2 = x2 - 5, y2 - 3
+            elif x1 < x2 and y1 > y2:
+                x1 = x1 + self.radius
+                x2, y2 = x2 - 5, y2 + 3
+            elif x1 > x2 and y1 <= y2:
+                x1 = x1 - self.radius
+                x2, y2 = x2 + 5, y2 - 3
+            elif x1 > x2 and y1 > y2:
+                x1 = x1 - self.radius
+                x2, y2 = x2 + 5, y2 + 3
+            points = (x1, y1, x2, y2)
+
+        if not self.tracer_drawn:
+            self.canvas.create_line(*points, fill="white", width=1.45, arrow="last",
+                                    smooth=1, tags="tracer")
+            self.tracer_drawn = True
+        else:
+            self.canvas.coords("tracer", *points)
+
     def record_state(self, new_state):
         self.states.append(new_state)
         self.update_input_window()
@@ -395,7 +469,7 @@ class InputBoard(Board):
         self.update_input_window()
 
     def reset(self):
-        self.canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text")
+        self.canvas.delete("circle", "arrow", "label", "transition", "self_transition", "text", "tracer")
         self.states = []
         self.transitions = []
         self.transition_states = []
@@ -443,6 +517,9 @@ class OutputBoard(Board):
             letters = None
 
         # print(self.same_state_transitions)
+
+    def setup(self):
+        self.canvas.bind('<1>', self.select_state)
 
     def render_automaton(self, fa):
         self.get_same_state_transitions(fa)
@@ -710,16 +787,6 @@ class App(Frame):
         self.main_canvas.create_window(22, 36, anchor=NW, window=self.nfa_button)
         self.main_canvas.create_window(194.3, 36, anchor=NW, window=self.dfa_button)
         self.main_canvas.create_window(22, 63, anchor=NW, window=self.convert_button)
-
-        self.input_board.canvas.bind('<1>', self.input_board.select_state)
-        self.input_board.canvas.bind('<Shift-1>', self.input_board.create_state)
-        self.input_board.canvas.bind('<Control-1>', self.input_board.create_transition)
-        self.input_board.canvas.bind('<BackSpace>', self.clear_input)
-        self.input_board.canvas.bind('r', self.create_automaton)
-        self.input_board.canvas.bind('t', self.convert_fa)
-        self.input_board.canvas.bind('<Control-z>', self.input_board.undo)
-
-        self.output_board.canvas.bind('<1>', self.input_board.select_state)
 
         self.clear_input()
 
