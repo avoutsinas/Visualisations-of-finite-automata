@@ -762,7 +762,7 @@ class App(Frame):
 
         self.clear_button = tk.Button(self, text="CLEAR", anchor="center", command=lambda: self.clear_input(),
                                       font=self.font_small)
-        self.clear_button.configure(width=20, height=1, activebackground="gray", relief=FLAT)
+        self.clear_button.configure(width=24, height=1, activebackground="gray", relief=FLAT)
 
         self.dfa_button = tk.Button(self, text="DFA", anchor="center", bg="gray",
                                     command=lambda: self.dfa_button_press(), font=self.font_small)
@@ -787,7 +787,7 @@ class App(Frame):
         self.main_canvas.create_window(389, 424, anchor=NW, window=self.output_board.container)
         self.main_canvas.create_window(17, 31, anchor=NW, window=self.input_window.container)
         self.main_canvas.create_window(17, 424, anchor=NW, window=self.output_window.container)
-        self.main_canvas.create_window(self.width / 2, self.height / 1.035, anchor=NW, window=self.clear_button)
+        self.main_canvas.create_window((self.width + 12) / 2, self.height / 1.035, anchor=NW, window=self.clear_button)
         self.main_canvas.create_window(22, 36, anchor=NW, window=self.nfa_button)
         self.main_canvas.create_window(194.3, 36, anchor=NW, window=self.dfa_button)
         self.main_canvas.create_window(22, 63, anchor=NW, window=self.convert_button)
