@@ -44,6 +44,9 @@ class Board:
         self.canvas.configure(xscrollcommand=self.x_scrollbar.set)
         self.x_scrollbar.pack(side="bottom", fill="x")
 
+        self.canvas.create_image(0, 0, image=main.bg, anchor="nw", tag="background")
+        self.canvas.pack()
+
         self.font = tkFont.Font(family="consolas", size=13)
         self.font_small = tkFont.Font(family="consolas", size=10)
         self.font_extra_small = tkFont.Font(family="consolas", size=8)
@@ -259,14 +262,14 @@ class InputBoard(Board):
 
         if len(self.transition_states) < 2:
             if self.transition_states == [] and name_tag in [s.get_name() for s in self.states]:
-                if "label" in tags:
+                if "label" in tags or "circle" in tags:
                     item = event.widget.find_withtag(name_tag + "label")
                     self.start_x, self.start_y = event.widget.coords(item)
                     self.transition_states.append(name_tag)
                     self.set_tracer(False)
 
             elif len(self.transition_states) == 1 and name_tag in [s.get_name() for s in self.states]:
-                if name_tag != self.transition_states[0] and "label" in tags:
+                if name_tag != self.transition_states[0] and ("label" in tags or "circle" in tags):
                     item = event.widget.find_withtag(name_tag + "label")
                     self.end_x, self.end_y = event.widget.coords(item)
                     self.transition_states.append(name_tag)
@@ -274,7 +277,7 @@ class InputBoard(Board):
                     self.transition_states = []
                     self.set_tracer(True)
                     print(self.tracer_drawn)
-                elif name_tag == self.transition_states[0] and "label" in tags:
+                elif name_tag == self.transition_states[0] and ("label" in tags or "circle" in tags):
                     item = event.widget.find_withtag(name_tag + "label")
                     self.end_x, self.end_y = event.widget.coords(item)
                     self.start_x, self.start_y = self.end_x, self.end_y
@@ -665,6 +668,9 @@ class Window:
         self.canvas.bind("<MouseWheel>", self._on_mousewheel)
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
 
+        self.canvas.create_image(0, 0, image=main.bg, anchor="nw", tag="background")
+        self.canvas.pack()
+
         self.width = width
         self.height = height
         self.font = tkFont.Font(family="consolas", size=14)
@@ -737,26 +743,18 @@ class App(Frame):
         self.input_board = InputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
                                       bg='white', highlightthickness=5, highlightbackground="black",
                                       highlightcolor="black")
-        self.input_board.canvas.create_image(0, 0, image=self.bg, anchor="nw", tag="background")
-        self.input_board.canvas.pack()
 
         self.output_board = OutputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
                                         bg='white', highlightthickness=5, highlightbackground="black",
                                         highlightcolor="black")
-        self.output_board.canvas.create_image(0, 0, image=self.bg, anchor="nw", tag="background")
-        self.output_board.canvas.pack()
 
-        self.input_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
+        self.input_window = OutputWindow(self, width=self.width * 0.25, height=self.height * 0.435,
                                          bg='white', highlightthickness=5, highlightbackground="black",
                                          highlightcolor="black", offset=7, txt=str(self.fa))
-        self.input_window.canvas.create_image(0, 0, image=self.bg, anchor="nw", tag="background")
-        self.input_window.canvas.pack()
 
-        self.output_window = OutputWindow(self.main_canvas, width=self.width * 0.25, height=self.height * 0.435,
+        self.output_window = OutputWindow(self, width=self.width * 0.25, height=self.height * 0.435,
                                           bg='white', highlightthickness=5, highlightbackground="black",
                                           highlightcolor="black", txt=tutorial_txt1)
-        self.output_window.canvas.create_image(0, 0, image=self.bg, anchor="nw", tag="background")
-        self.output_window.canvas.pack()
 
         self.clear_button = tk.Button(self, text="CLEAR", anchor="center", command=lambda: self.clear_input())
         self.clear_button.configure(width=20, height=1, activebackground="gray", relief=FLAT)
