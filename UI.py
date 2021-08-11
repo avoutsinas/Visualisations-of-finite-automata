@@ -240,7 +240,7 @@ class InputBoard(Board):
         r, r2 = self.radius, self.radius - 3
         tags = event.widget.gettags(tk.CURRENT)
 
-        if "label" in tags:
+        if "label" in tags or "circle" in tags:
             x, y = event.widget.coords(tags[0] + "label")
             state_name = tags[0]
 
