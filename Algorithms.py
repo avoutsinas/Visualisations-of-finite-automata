@@ -197,7 +197,7 @@ class Determinise(object):
 
                     print("End State : " + new_state_name + " with letter " + letter)
 
-        dfa_name = nfa.get_name() + ".to_DFA"
+        dfa_name = "Det(" + nfa.get_name() + ")"
         output_dfa = Dfa(dfa_name)
 
         for i in range(len(Q)):
@@ -367,7 +367,7 @@ class Minimise(object):
                     new_d.append(new_transition)
 
             # print(new_d)
-            name = "min_" + dfa.get_name()
+            name = "Min(" + dfa.get_name() + ")"
             output_dfa = cls.assemble_fa(r_s_dfa, name, new_Q, new_d)
 
             print(output_dfa)

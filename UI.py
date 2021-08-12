@@ -737,7 +737,7 @@ class App(Frame):
         self.font = tkFont.Font(family="consolas", size=14)
         self.font_small = tkFont.Font(family="consolas", size=10)
 
-        self.fa = Nfa(name="InputGraphFA")
+        self.fa = Nfa(name="InputNFA")
 
         self.pack(expand=Y, fill=BOTH)
 
@@ -850,7 +850,7 @@ class App(Frame):
         self.nfa_button.config(relief=SUNKEN)
         self.dfa_button.config(relief=RAISED)
         self.convert_button.configure(text="CONVERT")
-        self.fa = Nfa(name="InputGraphFA")
+        self.fa = Nfa(name="InputNFA")
         self.input_window.configure_txt(str(self.fa))
         self.clear_input()
 
@@ -859,7 +859,7 @@ class App(Frame):
         self.dfa_button.config(relief=SUNKEN)
         self.nfa_button.config(relief=RAISED)
         self.convert_button.configure(text="MINIMISE")
-        self.fa = Dfa(name="InputGraphFA")
+        self.fa = Dfa(name="InputDFA")
         self.input_window.configure_txt(str(self.fa))
         self.clear_input()
 
