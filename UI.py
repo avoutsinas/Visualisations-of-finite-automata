@@ -62,7 +62,6 @@ class Board:
         tags = event.widget.gettags(tk.CURRENT)
         name_tag = tags[0]
         print(name_tag)
-        print(event.x, event.y)
 
         if "label" in tags:
             event.widget.addtag_withtag('selected_txt', tk.CURRENT)
@@ -74,7 +73,10 @@ class Board:
             if "first" in event.widget.gettags(tk.CURRENT):
                 event.widget.addtag_withtag('selected_arrow', "arrow")
 
+            event.widget.itemconfig('selected', fill="#696969")
+
     def deselect(self, event):
+        event.widget.itemconfig('selected', fill="#3c3c3c")
         event.widget.dtag('selected')  # removes the 'selected' tag
         event.widget.dtag('selected_txt')
         event.widget.dtag("selected_final")
@@ -365,6 +367,8 @@ class InputBoard(Board):
     def set_tracer(self, stop):
         if not stop:
             self.canvas.unbind('<1>')
+            self.canvas.unbind('<2>')
+            self.canvas.unbind('<3>')
             self.canvas.unbind('<Shift-1>')
             self.canvas.unbind('<Control-z>')
             self.canvas.unbind('<B1-Motion>')
@@ -374,6 +378,8 @@ class InputBoard(Board):
             self.canvas.unbind('<1>')
             self.tracer_drawn = False
             self.canvas.bind('<1>', self.select_state)
+            self.canvas.bind('<2>', self.set_final)
+            self.canvas.bind('<3>', self.set_final)
             self.canvas.bind('<Shift-1>', self.create_state)
             self.canvas.bind('<Control-z>', self.undo)
             self.canvas.delete("tracer")
