@@ -222,10 +222,10 @@ class Dfa(Fa):
                 pass
 
         if self.is_valid():
-            return ("\nDFA " + self.name) + "\n\n" + r
+            return ("\n DFA " + self.name) + "\n\n" + r
         else:
             error = "\n" + " " * 5 + "This DFA is not valid!"
-            return ("\nDFA " + self.name) + "\n\n" + r + error
+            return ("\n DFA " + self.name) + "\n\n" + r + error
 
 
 class Nfa(Fa):
@@ -276,4 +276,4 @@ class Nfa(Fa):
             r += k.format(*line) + "\n"
             r += "-" * len(k.format(*line)) + "\n"
 
-        return ("\nNFA " + self.name) + "\n\n" + r
+        return ("\n NFA " + self.name) + "\n\n" + r
