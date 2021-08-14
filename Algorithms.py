@@ -23,191 +23,181 @@ class Determinise(object):
         return powerset
 
     @classmethod
-    def epsilon_closure(cls, all_states, nfa_transitions, powerset):
-        q = all_states
-        q0 = []
-        d = nfa_transitions
-        empty_d = []
-        epsilon_closures = []
-
-        for s in q:
-            for t in d:
-                flag_lst = [t.get_start_name(), void]
-                if t.get_start_name() in s.get_name() and t.letter == epsilon and t.get_end_name() not in flag_lst:
-                    empty_d.append(t)
-                    temp = t.get_start_state()
-                    if temp not in q0:
-                        q0.append(temp)
-
-        for s0 in q0:
-            combined_name = s0.get_name()
-            start = s0.is_start
-            final = s0.is_final
-
-            # print("--------------------------------------")
-            # print("For state " + str(s0))
-
-            if empty_d != []:
-                # print("caught")
-                for et in empty_d:
-                    # print(t)
-                    for es in et.get_end_states():
-                        if es.is_start:
-                            start = True
-                        if es.is_final:
-                            # print("caught")
-                            final = True
-                        if es.get_name() not in s0.get_name() and et.get_start_name() == s0.get_name():
-                            # print("passed name check")
-                            combined_name += "," + es.get_name()
-
-            combined_state = State(combined_name, start, final)
-
-            if combined_name in powerset:
-                # print("found")
-                for j in nfa_transitions:
-                    if j.get_start_name() in combined_name and j.letter == epsilon \
-                            and j.get_end_name() not in combined_name:
-                        to_append = NfaTransition(combined_state, j.letter, [k for k in j.get_end_states()])
-                        empty_d.append(to_append)
-                        # print(NfaTransition(combined_state, j.letter, [k for k in j.get_end_states()]))
-
-                    if combined_state not in q0:
-                        q0.append(combined_state)
-
-                        if s0 in epsilon_closures:
-                            idx = epsilon_closures.index(s0)
-                            epsilon_closures[idx] = combined_state
-                        else:
-                            epsilon_closures.append(combined_state)
-                        # print("Combined state: " + str(combined_state))
-                        # print("\n")
-
-        return epsilon_closures
-
-    # needs more work, there are corner cases
-    @classmethod
-    def merged_state(cls, nfa, same_letter_transitions, q):
-        name_memory = []
-        new_state_name = ""
-        starting = False
-        final = False
-        print(same_letter_transitions)
-        for t in same_letter_transitions:
-            print(t)
-
-            if len(t.get_end_states()) > 1:
-                print("more than one end states")
-                for s in sorted(t.get_end_states()):
-                    print(s)
-                    if s.is_final:
-                        final = True
-                    if name_memory == []:
-                        name_memory.append(s.get_name())
-                    elif name_memory != [] and s.get_name() not in name_memory:
-                        name_memory.append(s.get_name())
-
-            elif len(t.get_end_states()) == 1:
-                print("one end state")
-                start_s = t.get_start_state()
-                end_s = t.get_end_states()[0]
-                print("end state = " + str(end_s))
-
-                if end_s.is_final:
-                    final = True
-                if end_s.get_name() != void:
-                    if name_memory == []:
-                        name_memory.append(end_s.get_name())
-                    elif name_memory != [] and end_s.get_name() not in name_memory:
-                        name_memory.append(end_s.get_name())
-                elif end_s.get_name() == void:
-                    if name_memory == []:
-                        name_memory.append(start_s.get_name())
-                        if start_s.is_final:
-                            final = True
-
-        name_memory = sorted(name_memory)
-        print(name_memory)
-
-        if len(name_memory) > 1:
-            new_state_name = name_memory[0]
-            for i in range(1, len(name_memory)):
-                new_state_name += "," + name_memory[i]
-        elif len(name_memory) == 1:
-            new_state_name = name_memory[0]
-        else:
-            new_state_name = ""
-        new_state_name = str(new_state_name)
-
-        if new_state_name == q[0].get_name() or new_state_name == nfa.get_Q()[0].get_name():
-            starting = True
-
-        print(new_state_name, starting, final)
-        return new_state_name, starting, final
-
-    @classmethod
-    def convert(cls, nfa):
+    def assemble_dfa(cls, name, state_lst, d_lst, sigma):
+        dfa_name = "Det(" + name + ")"
+        output_dfa = Dfa(dfa_name)
         Q = []
-        Q.append(nfa.get_Q()[0])
-        transitions_to_add = []
-        nfa_states = nfa.get_Q()
-        sigma = nfa.get_sigma()
-        delta = nfa.get_d()
+        d = []
 
+        if [garbage_state] in state_lst:
+            state_lst.remove([garbage_state])
+            state_lst.append([garbage_state])
+
+        for state in state_lst:
+            state_name = None
+            start, final = False, False
+            for simp_state in state:
+                if state_name is None:
+                    state_name = simp_state.get_name()
+                else:
+                    state_name += "," + simp_state.get_name()
+                if simp_state.is_final:
+                    final = True
+                if state == state_lst[0]:
+                    start = True
+            s_to_append = State(state_name, start, final)
+            Q.append(s_to_append)
+        for t in d_lst:
+            start_name, end_name = None, None
+            letter = t[1]
+            for s in t[0]:
+                if start_name is None:
+                    start_name = s.get_name()
+                else:
+                    start_name += "," + s.get_name()
+            for s in t[2]:
+                if end_name is None:
+                    end_name = s.get_name()
+                else:
+                    end_name += "," + s.get_name()
+
+            start_state = [s for s in Q if s.get_name() == start_name][0]
+            end_state = [s for s in Q if s.get_name() == end_name][0]
+            d_to_append = DfaTransition(start_state, letter, end_state)
+            # print(to_append)
+            d.append(d_to_append)
+
+        for i in Q:
+            output_dfa.add_state(i.get_name(), i.is_final)
+
+        for j in d:
+            output_dfa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
+
+        return output_dfa
+
+    @classmethod
+    def epsilon_closure(cls, q, d, first=False):
+
+        if first == True:
+            closure = [q]
+            for t in d:
+                if t.get_start_state() in closure and t.letter == epsilon:
+                    temp = [s_ for s_ in t.get_end_states()]
+                    for i in temp:
+                        if i not in closure and i != empty_end_state:
+                            closure.append(i)
+            # print(closure)
+        else:
+            closure = q.copy()
+            for t in d:
+                for e_s in t.get_end_states():
+                    # print(e_s)
+                    if e_s not in closure and e_s != empty_end_state and t.letter == epsilon:
+                        closure.append(e_s)
+
+            closure = sorted(closure)
+
+            # print("e-closure " + str(closure))
+        return closure
+
+    @classmethod
+    def letter_closure(cls, e_closures, q, d):
+        closure = []
+
+        for t in d:
+            for e_s in t.get_end_states():
+                if e_s not in closure and e_s != empty_end_state:
+                    closure.append(e_s)
+
+        if closure == []:
+            closure = [garbage_state]
+
+        closure = sorted(closure)
+
+        if len(closure) == 1:
+            # print(e_closures)
+            for e in e_closures:
+                if e[0] == closure[0]:
+                    closure = e
+
+        # print("l-closure " + str(closure))
+
+        return closure
+
+    @classmethod
+    def convert(cls, nfa, debug=False):
         powerset = cls.find_powerset(nfa)
         print("POWERSET: " + str(powerset))
 
+        nfa_name = nfa.get_name()
+        nfa_d = nfa.get_d()
+        sigma = nfa.get_sigma()
+        dfa_states = []
+        dfa_transitions = []
+
+        S = []
+
+        nfa_start = nfa.Q[0]
+        s0 = cls.epsilon_closure(nfa_start, nfa_d, first=True)
+        dfa_states.append(s0)
+        S.append(s0)
+
+        if len(s0) > 1:
+            e_closures = [s0]
+        else:
+            e_closures = []
+
         if epsilon in sigma:
             sigma.remove(epsilon)
+            sigma.insert(0, epsilon)
 
-            empty_closures = cls.epsilon_closure(nfa_states, delta, powerset)
-
-            for i in empty_closures:
-                if i.is_start:
-                    Q.pop(0)
-                    Q.append(i)
-                else:
-                    Q.append(i)
-
-        for s0 in Q:
-            print("\nFor state " + str(s0))
-            state_transitions = []
-
-            for t in delta:
-                if t.get_start_name() in s0.get_name():
-                    state_transitions.append(t)
+        while S != []:
+            cls.debug_text("\nS = " + str(S), debug)
+            state = S.pop(0)
 
             for letter in sigma:
-                state_letter_transitions = [i for i in state_transitions if i.letter == letter]
+                state_letter_d = []
+                cls.debug_text("\n\nfor state " + str(state) + " with letter " + letter, debug)
+                all_transitions = [i for i in [t for t in [nfa.get_state_d(s) for s in state]]]
 
-                new_state_name, starting, final = cls.merged_state(nfa, state_letter_transitions, Q)
+                for i in all_transitions:
+                    for j in i:
+                        if j.letter == letter:
+                            state_letter_d.append(j)
 
-                if new_state_name == "":
-                    s_ = s0
+                cls.debug_text("State-letter-Transitions: " + str(state_letter_d), debug)
+
+                if letter == epsilon:
+                    new_state = cls.epsilon_closure(state, state_letter_d, False)
+                    if new_state not in dfa_states:
+                        cls.debug_text("in e-branch", debug)
+                        dfa_states.append(new_state)
+                        e_closures.append(new_state)
+                        S.append(new_state)
+
+                        dfa_states.remove(state)
+                        for t in dfa_transitions:
+                            if t[2] == state:
+                                t[2] = new_state
+                        state = new_state
                 else:
-                    s_ = State(new_state_name, starting, final)
+                    new_state = cls.letter_closure(e_closures, state, state_letter_d)
+                    if new_state not in dfa_states:
+                        dfa_states.append(new_state)
+                        S.append(new_state)
 
-                if s_.get_name() in powerset:
-                    if s_ == s0:
-                        transitions_to_add.append(DfaTransition(s0, letter, s0))
-                    else:
-                        transitions_to_add.append(DfaTransition(s0, letter, s_))
-                        if s_ not in Q:
-                            Q.append(s_)
+                    d_to_append = [state, letter, new_state]
+                    if d_to_append not in dfa_transitions:
+                        dfa_transitions.append(d_to_append)
 
-                    print("End State : " + new_state_name + " with letter " + letter)
+        to_return = cls.assemble_dfa(nfa_name, dfa_states, dfa_transitions, sigma)
 
-        dfa_name = "Det(" + nfa.get_name() + ")"
-        output_dfa = Dfa(dfa_name)
+        return to_return
 
-        for i in range(len(Q)):
-            output_dfa.add_state(Q[i].get_name(), Q[i].is_final)
-
-        for j in transitions_to_add:
-            output_dfa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
-
-        print(output_dfa)
-        return output_dfa
+    @classmethod
+    def debug_text(cls, str, debug):
+        if debug:
+            print(str)
 
 
 """******************************************* DFA TO minDFA *******************************************************"""

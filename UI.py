@@ -214,24 +214,26 @@ class InputBoard(Board):
                                                        "names.\n\n" "Please select a unique "
                                                        "name for this state",
                                                 parent=event.widget)
-
         if state_name is not None and final is not None:
             x, y, r, r2 = event.x, event.y, self.radius, self.radius - 3
 
             if not self.states:
                 starting = True
-                event.widget.create_line(x - r, y, x - 2.2 * r, y, arrow=tk.FIRST, tags=(state_name, "arrow"),
+                event.widget.create_line(x - r, y, x - 2.2 * r, y, arrow=tk.FIRST,
+                                         tags=(state_name, "state" + state_name, "arrow"),
                                          fill="white", width=1.45)
                 event.widget.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
-                                         tags=(state_name, "circle", "first"), width=1.4)
+                                         tags=(state_name, "state" + state_name, "circle", "first"), width=1.4)
                 event.widget.create_text(x, y, text=state_name, fill="white",
-                                         tags=(state_name, state_name + "label", "first", "label"),
+                                         tags=(
+                                         state_name, "state" + state_name, state_name + "label", "first", "label"),
                                          font=self.font)
             else:
                 event.widget.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
-                                         tags=(state_name, "circle"), width=1.4)
+                                         tags=(state_name, "state" + state_name, "circle"), width=1.4)
                 event.widget.create_text(x, y, text=state_name, fill="white",
-                                         tags=(state_name, state_name + "label", "label"), font=self.font)
+                                         tags=(state_name, "state" + state_name, state_name + "label", "label"),
+                                         font=self.font)
 
             new_state = State(state_name, starting, final)
 
@@ -255,7 +257,7 @@ class InputBoard(Board):
                 selected_state.is_final = False
             else:
                 event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
-                                         tags=(state_name, state_name + "final", "circle"), width=1.4)
+                                         tags=(state_name, "state" + state_name, state_name + "final", "circle"), width=1.4)
                 selected_state.is_final = True
 
             self.main.update_input_window()
@@ -462,10 +464,12 @@ class InputBoard(Board):
     def undo(self, event):
         if self.memory != []:
             current = self.memory.pop()
-            if type(current[0]) is not int:
+            if isinstance(current[0], State):
+                print("found state")
                 state_to_remove = current[0]
                 self.states.remove(state_to_remove)
-                self.canvas.delete(state_to_remove.get_name())
+                print(state_to_remove.get_name())
+                self.canvas.delete("state" + state_to_remove.get_name())
             elif type(current[0]) is int:
                 self.canvas.delete(current[0])
                 self.canvas.delete(current[1])
