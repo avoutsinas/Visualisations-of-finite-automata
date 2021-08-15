@@ -542,7 +542,7 @@ class OutputBoard(Board):
 
         if 0 <= len(fa.get_Q()) <= 5:
             self.distance_factor = 10
-        elif 6 <= len(fa.get_Q()) < 10:
+        elif 6 <= len(fa.get_Q()) <= 10:
             self.distance_factor = 5
         elif len(fa.get_Q()) > 10:
             self.distance_factor = 3

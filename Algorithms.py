@@ -97,7 +97,6 @@ class Determinise(object):
 
             closure = sorted(closure)
 
-            # print("e-closure " + str(closure))
         return closure
 
     @classmethod
@@ -115,12 +114,17 @@ class Determinise(object):
         closure = sorted(closure)
 
         if len(closure) == 1:
-            # print(e_closures)
             for e in e_closures:
                 if e[0] == closure[0]:
                     closure = e
+        elif len(closure) > 1:
+            for e in e_closures:
+                if e[0] == closure[0]:
+                    for s_ in e:
+                        if s_ not in closure:
+                            closure.append(s_)
 
-        # print("l-closure " + str(closure))
+        closure = sorted(closure)
 
         return closure
 
@@ -169,6 +173,7 @@ class Determinise(object):
 
                 if letter == epsilon:
                     new_state = cls.epsilon_closure(state, state_letter_d, False)
+                    cls.debug_text("e-closure " + str(new_state), debug)
                     if new_state not in dfa_states:
                         cls.debug_text("in e-branch", debug)
                         dfa_states.append(new_state)
@@ -182,6 +187,7 @@ class Determinise(object):
                         state = new_state
                 else:
                     new_state = cls.letter_closure(e_closures, state, state_letter_d)
+                    cls.debug_text("l-closure " + str(new_state), debug)
                     if new_state not in dfa_states:
                         dfa_states.append(new_state)
                         S.append(new_state)
@@ -195,9 +201,9 @@ class Determinise(object):
         return to_return
 
     @classmethod
-    def debug_text(cls, str, debug):
+    def debug_text(cls, string, debug):
         if debug:
-            print(str)
+            print(string)
 
 
 """******************************************* DFA TO minDFA *******************************************************"""
