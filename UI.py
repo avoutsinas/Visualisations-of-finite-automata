@@ -226,7 +226,7 @@ class InputBoard(Board):
                                          tags=(state_name, "state" + state_name, "circle", "first"), width=1.4)
                 event.widget.create_text(x, y, text=state_name, fill="white",
                                          tags=(
-                                         state_name, "state" + state_name, state_name + "label", "first", "label"),
+                                             state_name, "state" + state_name, state_name + "label", "first", "label"),
                                          font=self.font)
             else:
                 event.widget.create_oval(x - r, y - r, x + r, y + r, outline='white', fill='#3c3c3c',
@@ -257,7 +257,8 @@ class InputBoard(Board):
                 selected_state.is_final = False
             else:
                 event.widget.create_oval(x - r2, y - r2, x + r2, y + r2, outline='white', fill='',
-                                         tags=(state_name, "state" + state_name, state_name + "final", "circle"), width=1.4)
+                                         tags=(state_name, "state" + state_name, state_name + "final", "circle"),
+                                         width=1.4)
                 selected_state.is_final = True
 
             self.main.update_input_window()
@@ -779,24 +780,24 @@ class App(Frame):
         self.main_canvas.pack(expand=Y, fill=BOTH)
 
         self.input_board = InputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
-                                      bg='white', highlightthickness=5, highlightbackground="black",
+                                      bg='black', highlightthickness=5, highlightbackground="black",
                                       highlightcolor="black")
 
         self.output_board = OutputBoard(self, width=self.width * 0.705, height=self.height * 0.435,
-                                        bg='white', highlightthickness=5, highlightbackground="black",
+                                        bg='black', highlightthickness=5, highlightbackground="black",
                                         highlightcolor="black")
 
         self.input_window = OutputWindow(self, width=self.width * 0.25, height=self.height * 0.435,
-                                         bg='white', highlightthickness=5, highlightbackground="black",
+                                         bg='black', highlightthickness=5, highlightbackground="black",
                                          highlightcolor="black", offset=7, txt=str(self.fa))
 
         self.output_window = OutputWindow(self, width=self.width * 0.25, height=self.height * 0.435,
-                                          bg='white', highlightthickness=5, highlightbackground="black",
+                                          bg='black', highlightthickness=5, highlightbackground="black",
                                           highlightcolor="black", txt=tutorial_txt1)
 
         self.clear_button = tk.Button(self, text="CLEAR", anchor="center", command=lambda: self.clear_input(),
                                       font=self.font_small)
-        self.clear_button.configure(width=24, height=1, activebackground="gray", relief=FLAT)
+        self.clear_button.configure(width=24, height=1, activebackground="gray", relief=RAISED)
 
         self.dfa_button = tk.Button(self, text="DFA", anchor="center", bg="gray",
                                     command=lambda: self.dfa_button_press(), font=self.font_small)
@@ -808,8 +809,14 @@ class App(Frame):
 
         self.convert_button = tk.Button(self, text="CONVERT", anchor="center", bg="gray", fg="black",
                                         command=lambda: self.convert_fa(), font=self.font_small)
-        self.convert_button.configure(width=48, height=1, activebackground="black", activeforeground="white", bd=3.5,
-                                      relief=FLAT)
+        self.convert_button.configure(width=24, height=1, activebackground="black", activeforeground="white", bd=3.5,
+                                      relief=RAISED)
+
+        self.min_convert_button = tk.Button(self, text="MIN CONVERT", anchor="center", bg="gray", fg="black",
+                                            command=lambda: self.min_convert_nfa(), font=self.font_small)
+        self.min_convert_button.configure(width=22, height=1, activebackground="black", activeforeground="white",
+                                          bd=3.5,
+                                          relief=RAISED)
 
         self.setup()
 
@@ -823,6 +830,7 @@ class App(Frame):
         self.main_canvas.create_window((self.width + 17) / 2, self.height / 1.035, anchor=NW, window=self.clear_button)
         self.main_canvas.create_window(22, 36, anchor=NW, window=self.nfa_button)
         self.main_canvas.create_window(194.3, 36, anchor=NW, window=self.dfa_button)
+        self.main_canvas.create_window(204.3, 63, anchor=NW, window=self.min_convert_button)
         self.main_canvas.create_window(22, 63, anchor=NW, window=self.convert_button)
 
         self.clear_input()
@@ -869,6 +877,39 @@ class App(Frame):
                 self.output_window.update_output(str(determinised_fa))
                 self.output_board.render_automaton(determinised_fa)
 
+    def min_convert_nfa(self):
+        self.output_board.reset()
+        if self.fa.type() == "nfa":
+            if self.fa.Q != [] and self.fa.d != []:
+                det = Determinise()
+                min = Minimise()
+                determinised_fa = det.convert(self.fa)
+                if determinised_fa.is_valid():
+                    renamed_fa, name_index = min.rename_fa_states(determinised_fa)
+                    min_det_fa = min.convert(renamed_fa)
+                    self.output_window.update_output(str(min_det_fa) + name_index)
+                    self.output_board.render_automaton(min_det_fa)
+
+    def nfa_button_press(self):
+        print("NFA Selected")
+        self.nfa_button.config(relief=SUNKEN)
+        self.dfa_button.config(relief=RAISED)
+        self.convert_button.configure(text="CONVERT", width=24)
+        self.min_convert_button.lift()
+        self.fa = Nfa(name="InputNFA")
+        self.input_window.configure_txt(str(self.fa))
+        self.clear_input()
+
+    def dfa_button_press(self):
+        print("DFA Selected")
+        self.dfa_button.config(relief=SUNKEN)
+        self.nfa_button.config(relief=RAISED)
+        self.convert_button.configure(text="MINIMISE", width=48)
+        self.min_convert_button.lower()
+        self.fa = Dfa(name="InputDFA")
+        self.input_window.configure_txt(str(self.fa))
+        self.clear_input()
+
     def update_input_window(self):
         fa = self.create_automaton()
         self.input_window.update_output(str(fa))
@@ -879,24 +920,6 @@ class App(Frame):
         self.fa.clear()
         self.input_window.reset_output()
         self.output_window.reset_output()
-
-    def nfa_button_press(self):
-        print("NFA Selected")
-        self.nfa_button.config(relief=SUNKEN)
-        self.dfa_button.config(relief=RAISED)
-        self.convert_button.configure(text="CONVERT")
-        self.fa = Nfa(name="InputNFA")
-        self.input_window.configure_txt(str(self.fa))
-        self.clear_input()
-
-    def dfa_button_press(self):
-        print("DFA Selected")
-        self.dfa_button.config(relief=SUNKEN)
-        self.nfa_button.config(relief=RAISED)
-        self.convert_button.configure(text="MINIMISE")
-        self.fa = Dfa(name="InputDFA")
-        self.input_window.configure_txt(str(self.fa))
-        self.clear_input()
 
 
 def app_startup(skip=False):

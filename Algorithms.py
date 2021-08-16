@@ -212,6 +212,66 @@ class Determinise(object):
 class Minimise(object):
 
     @classmethod
+    def rename_fa_states(cls, fa):
+        count = -1
+        name_prefix = "Q"
+        name_index = "\n\n State Name Index:\n"
+        for s in fa.get_Q():
+            new_name = name_prefix + str(count + 1)
+            for t in fa.get_d():
+                if t.get_start_name() == s.get_name():
+                    t.get_start_state().name = new_name
+                if t.get_end_name() == s.get_name():
+                    t.get_end_state().name = new_name
+
+            if s.get_name() == "{" + void + "}":
+                name_index += "\n " + new_name + " : " + s.get_name()
+            else:
+                name_index += "\n " + new_name + " : " + "{" + s.get_name() + "}"
+
+            s.name = new_name
+
+            count += 1
+            if count >= 10:
+                name_prefix = "S"
+                count = -1
+            elif count >= 20:
+                name_prefix = "R"
+                count = -1
+            elif count >= 30:
+                name_prefix = "T"
+                count = -1
+
+        return fa, name_index
+
+    @classmethod
+    def assemble_fa(cls, fa, name, r_s, r_t):
+        tp = fa.type()
+        output_fa = None
+        r_s = sorted(r_s)
+
+        if tp == "dfa":
+            output_fa = Dfa(name)
+
+            for i in range(len(r_s)):
+                output_fa.add_state(r_s[i].get_name(), r_s[i].is_final)
+
+            for j in r_t:
+                output_fa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
+
+        elif tp == "nfa":
+            output_fa = Nfa("min_" + fa.get_name())
+
+            for i in range(len(r_s)):
+                output_fa.add_state(r_s[i].get_name(), r_s[i].is_final)
+
+            for j in r_t:
+                for e_s in j.get_end_states():
+                    output_fa.add_transition(j.get_start_state(), j.letter, e_s)
+
+        return output_fa
+
+    @classmethod
     def remove_unreachable_states(cls, input_fa):
         fa_type = input_fa.type()
 
@@ -286,32 +346,6 @@ class Minimise(object):
 
         print("Partitions = " + str(p))
         return p
-
-    @classmethod
-    def assemble_fa(cls, fa, name, r_s, r_t):
-        tp = fa.type()
-        output_fa = None
-
-        if tp == "dfa":
-            output_fa = Dfa(name)
-
-            for i in range(len(r_s)):
-                output_fa.add_state(r_s[i].get_name(), r_s[i].is_final)
-
-            for j in r_t:
-                output_fa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
-
-        elif tp == "nfa":
-            output_fa = Nfa("min_" + fa.get_name())
-
-            for i in range(len(r_s)):
-                output_fa.add_state(r_s[i].get_name(), r_s[i].is_final)
-
-            for j in r_t:
-                for e_s in j.get_end_states():
-                    output_fa.add_transition(j.get_start_state(), j.letter, e_s)
-
-        return output_fa
 
     @classmethod
     def convert(cls, dfa):
