@@ -5,15 +5,15 @@ import tkinter
 import PIL
 
 setup(
-    windows = [
+    windows=[
         {
             "script": "main.py",
             "icon_resources": [(1, "images//logo.ico")],
-            "dest_base" : "VoFA"
+            "dest_base": "VoFA"
         }
     ],
-    version = '1.0',
-    name = 'Visualisations of Finite Automata',
+    version='1.0',
+    name='Visualisations of Finite Automata',
 )
 
 # To compile into executable folder run powershell command : 'py setup.py py2exe'
