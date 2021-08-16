@@ -2,6 +2,7 @@ import numpy as np
 from Preliminaries import *
 
 empty_end_state = State(state_name=void)
+garbage_state = State(state_name="{"+void+"}")
 
 
 class Fa:
@@ -173,7 +174,7 @@ class Dfa(Fa):
     def add_transition(self, q1, letter, q2):
         letter_str = str(letter)
 
-        if q1 in self.Q and (q2 in self.Q or q2.get_name() == void):
+        if q1 in self.Q and (q2 in self.Q or q2 == empty_end_state):
             transition_to_add = DfaTransition(q1, letter_str, q2)
             self.d.append(transition_to_add)
 
@@ -197,7 +198,7 @@ class Dfa(Fa):
             for s in self.Q:
                 transition_letters = []
                 for t in self.d:
-                    if t.get_start_name() == s.get_name():
+                    if t.get_start_state() == s:
                         transition_letters.append(t.letter)
 
                 if sorted(transition_letters) != sorted(self.sigma):
@@ -214,7 +215,6 @@ class Dfa(Fa):
         size = "{:^" + str(self.find_table_size() + 4) + "s}|"
         for line in table:
             try:
-                print(line)
                 k = size * len(table[0])
                 r += k.format(*line) + "\n"
                 r += "-" * len(k.format(*line)) + "\n"
@@ -222,10 +222,10 @@ class Dfa(Fa):
                 pass
 
         if self.is_valid():
-            return ("\nDFA " + self.name) + "\n\n" + r
+            return ("\n DFA " + self.name) + "\n\n" + r
         else:
             error = "\n" + " " * 5 + "This DFA is not valid!"
-            return ("\nDFA " + self.name) + "\n\n" + r + error
+            return ("\n DFA " + self.name) + "\n\n" + r + error
 
 
 class Nfa(Fa):
@@ -259,6 +259,9 @@ class Nfa(Fa):
                 self.sigma.append(letter_str)
 
     # misc
+    @staticmethod
+    def is_valid():
+        return False
 
     @staticmethod
     def type():
@@ -273,4 +276,4 @@ class Nfa(Fa):
             r += k.format(*line) + "\n"
             r += "-" * len(k.format(*line)) + "\n"
 
-        return ("\nNFA " + self.name) + "\n\n" + r
+        return ("\n NFA " + self.name) + "\n\n" + r
