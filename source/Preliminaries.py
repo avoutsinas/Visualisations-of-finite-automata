@@ -47,7 +47,6 @@ class Transition:
         self.start_state = start_state
         self.end_state = end_state
         self.letter = str(letter)
-        self.matrix = [self.start_state, self.letter, self.end_state]
 
         # accessors
 
