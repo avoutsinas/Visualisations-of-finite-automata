@@ -425,7 +425,6 @@ def nfa_to_min_dfa_test():
     print("Is the DFA " + output.get_name() + " valid? : " + str(output.is_valid()))
 
     renamed_fa, renamed_states = Minimise().rename_fa_states(output)
-    print(renamed_fa)
     mindfa = Minimise().convert(renamed_fa)
     print(renamed_states)
     print("\nIs the DFA " + mindfa.get_name() + " valid? : " + str(mindfa.is_valid()))
