@@ -30,6 +30,12 @@ class State:
         else:
             return False
 
+    # mutators
+
+    def set_name(self, new_name):
+        self.name = str(new_name)
+        self.state[0] = self.name
+
     # misc
 
     def __str__(self):

@@ -73,6 +73,8 @@ class Determinise(object):
         for j in d:
             output_dfa.add_transition(j.get_start_state(), j.letter, j.get_end_state())
 
+        output_dfa.sigma = sorted(output_dfa.sigma)
+
         return output_dfa
 
     @classmethod
@@ -229,7 +231,7 @@ class Minimise(object):
             else:
                 name_index += "\n " + new_name + " : " + "{" + s.get_name() + "}"
 
-            s.name = new_name
+            s.set_name(new_name)
 
             count += 1
             if count >= 10:
@@ -268,6 +270,8 @@ class Minimise(object):
             for j in r_t:
                 for e_s in j.get_end_states():
                     output_fa.add_transition(j.get_start_state(), j.letter, e_s)
+
+        output_fa.sigma = sorted(output_fa.sigma)
 
         return output_fa
 

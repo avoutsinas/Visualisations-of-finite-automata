@@ -275,7 +275,7 @@ class InputBoard(Board):
                     item = event.widget.find_withtag(name_tag + "label")
                     self.start_x, self.start_y = event.widget.coords(item)
                     self.transition_states.append(name_tag)
-                    self.set_tracer(False)
+                    self.set_tracer(stop=False)
 
             elif len(self.transition_states) == 1 and name_tag in [s.get_name() for s in self.states]:
                 if name_tag != self.transition_states[0] and ("label" in tags or "circle" in tags):
@@ -284,7 +284,7 @@ class InputBoard(Board):
                     self.transition_states.append(name_tag)
                     self.draw_transition(event, r)
                     self.transition_states = []
-                    self.set_tracer(True)
+                    self.set_tracer(stop=True)
                     print(self.tracer_drawn)
                 elif name_tag == self.transition_states[0] and ("label" in tags or "circle" in tags):
                     item = event.widget.find_withtag(name_tag + "label")
@@ -293,11 +293,11 @@ class InputBoard(Board):
                     self.transition_states.append(name_tag)
                     self.draw_self_transition(event, r)
                     self.transition_states = []
-                    self.set_tracer(True)
+                    self.set_tracer(stop=True)
                     print(self.tracer_drawn)
             else:
                 self.transition_states = []
-                self.set_tracer(True)
+                self.set_tracer(stop=True)
                 print(self.tracer_drawn)
 
     def draw_self_transition(self, event, r):
