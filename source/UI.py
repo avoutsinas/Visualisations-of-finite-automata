@@ -1,4 +1,5 @@
 import numpy as np
+import webbrowser
 import tkinter as tk
 from tkinter import *
 import tkinter.font as tkFont
@@ -12,11 +13,14 @@ tutorial_txt1 = "                  Welcome!" \
                 "\n\n You can begin constructing an automaton!" \
                 "\n\n                  Keybinds:" \
                 "\n\n State Creation: Shift-LMB" \
-                "\n\n Set Final Value: RMB" \
-                "\n\n Transition Creation: Control-LMB" \
-                "\n\n * Click a state by holding down Control" \
+                "\n\n Toggle Final State: RMB" \
+                "\n\n Transition Creation: Ctrl-LMB" \
+                "\n\n * Click a state while holding down Control" \
+                "\n\n * Select a second state with LMB" \
+                "\n\n * Enter transition symbol" \
+                "\n\n * Separate multiple symbols with commas" \
                 '\n\n * For the empty arrow use the symbol "$" ' \
-                "\n\n Undo Action: Control-Z " \
+                "\n\n Undo Action: Ctrl-Z " \
                 "\n\n               Functionality:" \
                 "\n\n Depending on your selected options you can: " \
                 "\n\n a) Convert a NFA to its equivalent DFA" \
@@ -765,13 +769,15 @@ class App(Frame):
         self.height = 850
         self.font = tkFont.Font(family="consolas", size=14)
         self.font_small = tkFont.Font(family="consolas", size=10)
+        self.font_tiny = tkFont.Font(family="consolas", size=8)
 
         self.fa = Nfa(name="InputNFA")
 
         self.pack(expand=Y, fill=BOTH)
 
         self.image0 = Image.open("source//images//logo.ico")
-        self.image1 = Image.open("source//images//Window_Blackboard.jpg").resize((self.width, self.height), Image.ANTIALIAS)
+        self.image1 = Image.open("source//images//Window_Blackboard.jpg").resize((self.width, self.height),
+                                                                                 Image.ANTIALIAS)
         self.main_logo = ImageTk.PhotoImage(self.image0)
         self.bg = ImageTk.PhotoImage(self.image1)
 
@@ -818,20 +824,27 @@ class App(Frame):
                                           bd=3.5,
                                           relief=RAISED)
 
+        self.info_button = tk.Button(self, text="About", anchor="center", fg="black",
+                                     command=lambda: self.info_button_press(), font=self.font_tiny)
+        self.info_button.configure(width=7, height=1, activebackground="black", activeforeground="white",
+                                   relief=RAISED)
+
         self.setup()
 
     def setup(self):
         self.position_app()
 
-        self.main_canvas.create_window(389, 31, anchor=NW, window=self.input_board.container)
-        self.main_canvas.create_window(389, 424, anchor=NW, window=self.output_board.container)
-        self.main_canvas.create_window(17, 31, anchor=NW, window=self.input_window.container)
-        self.main_canvas.create_window(17, 424, anchor=NW, window=self.output_window.container)
-        self.main_canvas.create_window((self.width + 17) / 2, self.height / 1.035, anchor=NW, window=self.clear_button)
-        self.main_canvas.create_window(22, 36, anchor=NW, window=self.nfa_button)
-        self.main_canvas.create_window(194.3, 36, anchor=NW, window=self.dfa_button)
-        self.main_canvas.create_window(204.3, 63, anchor=NW, window=self.min_convert_button)
-        self.main_canvas.create_window(22, 63, anchor=NW, window=self.convert_button)
+        self.main_canvas.create_window(389, 20, anchor=NW, window=self.input_board.container)
+        self.main_canvas.create_window(389, 413, anchor=NW, window=self.output_board.container)
+        self.main_canvas.create_window(17, 20, anchor=NW, window=self.input_window.container)
+        self.main_canvas.create_window(17, 413, anchor=NW, window=self.output_window.container)
+        self.main_canvas.create_window((self.width + 17) / 2, self.height / 1.0425, anchor=NW, window=self.clear_button)
+        self.main_canvas.create_window(22, 25, anchor=NW, window=self.nfa_button)
+        self.main_canvas.create_window(194.3, 25, anchor=NW, window=self.dfa_button)
+        self.main_canvas.create_window(204.3, 52, anchor=NW, window=self.min_convert_button)
+        self.main_canvas.create_window(22, 52, anchor=NW, window=self.convert_button)
+        self.main_canvas.create_window(self.width * 0.12, self.height / 1.04, anchor=NW,
+                                       window=self.info_button)
 
         self.clear_input()
 
@@ -909,6 +922,9 @@ class App(Frame):
         self.fa = Dfa(name="InputDFA")
         self.input_window.configure_txt(str(self.fa))
         self.clear_input()
+
+    def info_button_press(self):
+        webbrowser.open_new(r"https://github.com/avoutsinas/Visualisations-of-finite-automata")
 
     def update_input_window(self):
         fa = self.create_automaton()

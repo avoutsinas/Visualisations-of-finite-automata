@@ -3,6 +3,7 @@ import py2exe
 import numpy
 import tkinter
 import PIL
+import webbrowser
 
 setup(
     windows=[
