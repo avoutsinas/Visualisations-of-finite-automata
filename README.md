@@ -57,11 +57,11 @@ Once the automaton is constructed, all we have to do to convert it to an equival
 
 
 
-By comparing the output with the solution provided in the textbook,we can verify that the automaton was successfully converted. We could also click the "MIN CONVERT" button to view the equivalent minimal DFA, but in this example the output automaton is already in minimal form.
+By comparing the output with the solution provided in the textbook, we can verify that the automaton was successfully converted. We could also click the "MIN CONVERT" button to view the equivalent minimal DFA, but in this example the output automaton is already in minimal form.
 
 
 
-Finally, we can click the "CLEAR" button to reset all panels of the application and begindesigning a brand new automaton to convert. To create a DFA and convert it to minimalform, we would simply have to click the tab "DFA" and start designing the input DFA.
+Finally, we can click the "CLEAR" button to reset all panels of the application and begin designing a brand new automaton to convert. To create a DFA and convert it to minimalform, we would simply have to click the tab "DFA" and start designing the input DFA.
 
 
 
