@@ -13,8 +13,8 @@ the DFA minimisation algorithm, a DFA can be converted to its most efficient for
 
 ## Functionality and Features:
 
-An automaton can be entered by drawing it on a digital canvas, simulating the traditional pen and paper experience. Users will be able to apply the aforementioned powerset construction and minimisation algorithms (depending on the class of automaton) and view the output both as a transition table and a graphical representation. The tool has 
-the following five core functionalities:
+An automaton can be constructed by drawing it on a digital canvas, simulating the traditional pen and paper experience of adding states and transitions. Users are be able to 
+apply the aforementioned powerset construction and minimisation algorithms (depending on the class of automaton) and view the output both as a transition table and a graphical representation. The tool has the following five core functionalities:
 
 1. Construct DFA as graphs
 2. Construct NFA as graphs
