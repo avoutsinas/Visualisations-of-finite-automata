@@ -26,7 +26,7 @@ the following five core functionalities:
 
 ## How to use the Application
 
-# Keybinds:
+### Keybinds:
 1. State Creation: Shift-LMB" 
 2. Toggle Final State: RMB"
 3. Transition Creation: Ctrl-LMB"
@@ -37,7 +37,7 @@ the following five core functionalities:
    - For the empty arrow use the symbol "$"
 4. Undo Action: Ctrl-Z
 
-# Tutorial:
+### Tutorial:
 
 
 
