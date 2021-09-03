@@ -934,7 +934,7 @@ class App(Frame):
         self.clear_input()
 
     def info_button_press(self):
-        webbrowser.open_new(r"https://github.com/avoutsinas/Visualisations-of-finite-automata")
+        webbrowser.open_new(r"https://github.com/avoutsinas/Visualisations-of-finite-automata/blob/main/README.md")
 
     def update_input_window(self):
         fa = self.create_automaton()
