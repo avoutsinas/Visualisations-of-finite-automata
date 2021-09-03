@@ -1,9 +1,11 @@
 # Visualisations of Finite Automata and Algorithms
 
-VoFA is an educational tool aimed for beginners in the field of Computer Science
+<p align="center">
+    VoFA is an educational tool aimed for beginners in the field of Computer Science
+</p>
 
 ![GitHub Logo](/images/picture1.jpg)
-
+<p align="center">
 Automata theory is a branch of computer science that deals with designing abstract self-propelled computing devices that follow a predetermined sequence of operations 
 automatically. A finite automaton, or finite-state machine, is an abstract mathematical model of computation which has a finite number of states. A finite automaton can be 
 in exactly one state at any given time and it can transition from one state to another by responding to an input. Any finite-state machine can be 
@@ -14,6 +16,7 @@ speech recognition software.
 In undergraduate courses, finite automata are typically divided into two main classes: Deterministic Finite Automata (DFA) and Non-Deterministic Finite Automata (NFA). 
 Through the implementation of the powerset construction algorithm (or NFA to DFA conversion algorithm) one can find the equivalent DFA of a given NFA. Additionally, through 
 the DFA minimisation algorithm, a DFA can be converted to its most efficient form with the minimal number of states.
+  </p>
 
 ![GitHub Logo](/images/picture2.jpg)
 
