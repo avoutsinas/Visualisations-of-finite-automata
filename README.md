@@ -26,16 +26,18 @@ the following five core functionalities:
 
 ## How to use the Application
 
-Keybinds:
+# Keybinds:
 1. State Creation: Shift-LMB" 
 2. Toggle Final State: RMB"
 3. Transition Creation: Ctrl-LMB"
-   *Click a state while holding down Control"
-   Select a second state with LMB"
-   Enter transition symbol"
-   Separate multiple symbols with commas
-   For the empty arrow use the symbol "$"*
+   - Click a state while holding down Control
+   - Select a second state with LMB
+   - Enter transition symbol
+   - Separate multiple symbols with commas
+   - For the empty arrow use the symbol "$"
 4. Undo Action: Ctrl-Z
+
+# Tutorial:
 
 
 
