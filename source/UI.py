@@ -1,4 +1,5 @@
 import numpy as np
+import string
 import webbrowser
 import tkinter as tk
 from tkinter import *
@@ -502,6 +503,15 @@ class InputBoard(Board):
             to_return = txt.replace("$", epsilon)
         else:
             to_return = txt
+
+        to_return = [''.join(c for c in s if c not in string.punctuation) for s in to_return]
+
+        temp = ""
+        for i in range(len(sorted(to_return))):
+            if to_return[i] not in [" ", ","] and to_return[i] not in temp:
+                temp += to_return[i] + ","
+        to_return = temp[:-1]
+
         return to_return
 
 

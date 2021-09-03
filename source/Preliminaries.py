@@ -18,18 +18,6 @@ class State:
     def get_name(self):
         return self.name
 
-    def __eq__(self, other):
-        if self.name == other.name and self.is_start == other.is_start and self.is_final == other.is_final:
-            return True
-        else:
-            return False
-
-    def __lt__(self, other):
-        if self.name < other.name:
-            return True
-        else:
-            return False
-
     # mutators
 
     def set_name(self, new_name):
@@ -46,6 +34,18 @@ class State:
 
     def __repr__(self):
         return str(self)
+
+    def __eq__(self, other):
+        if self.name == other.name and self.is_start == other.is_start and self.is_final == other.is_final:
+            return True
+        else:
+            return False
+
+    def __lt__(self, other):
+        if self.name < other.name:
+            return True
+        else:
+            return False
 
 
 class Transition:
