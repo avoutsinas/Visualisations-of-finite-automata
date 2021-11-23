@@ -21,7 +21,7 @@ apply the aforementioned powerset construction and minimisation algorithms (depe
 2. Construct NFA as graphs
 3. Convert a given NFA to its equivalent DFA
 4. Convert a given DFA to its equivalent minimal DFA
-5. Convert a given NFA to its equivalent minimal DFA by combining functionalities (3)and (4)
+5. Convert a given NFA to its equivalent minimal DFA by combining functionalities (3) and (4)
 
 ## How to use the Application
 
