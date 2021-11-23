@@ -66,7 +66,7 @@ To create a transition we have to use the key-bind "Control and left mouse butto
 </p>
 
 
-Once the automaton is constructed, all we have to do to convert it to an equivalent DFA, is to click the "CONVERT" button. Once the convert button is clicked the equivalent DFA is rendered on the output canvas and its transition table is visible on the output window. Wecan reorient the states of the automaton on the output canvas in any desired configuration.
+Once the automaton is constructed, all we have to do to convert it to an equivalent DFA, is to click the "CONVERT" button. Once the convert button is clicked the equivalent DFA is rendered on the output canvas and its transition table is visible on the output window. We can re-orient the states of the automaton on the output canvas in any desired configuration.
 
 <p align="center">
   <img width="1000" src="https://github.com/avoutsinas/Visualisations-of-finite-automata/blob/main/source/images/Tutorial/Textbook_conversion.PNG">
@@ -79,7 +79,7 @@ By comparing the output with the solution provided in the textbook, we can verif
   <img src="https://github.com/avoutsinas/Visualisations-of-finite-automata/blob/main/source/images/Tutorial/sipser_solution.png" width="480" /> 
 </p>
 
-Finally, we can click the "CLEAR" button to reset all panels of the application and begin designing a brand new automaton to convert. To create a DFA and convert it to minimalform, we would simply have to click the tab "DFA" and start designing the input DFA.
+Finally, we can click the "CLEAR" button to reset all panels of the application and begin designing a brand new automaton to convert. To create a DFA and convert it to minimal form, we would simply have to click the tab "DFA" and start designing the input DFA.
 
 ## Installation guide
 This application is designed to operate on a Windows computer. In order to successfully install  and run the application perform the following steps:
